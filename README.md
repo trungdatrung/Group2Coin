@@ -155,11 +155,11 @@ def mine_block(self, difficulty):
     Goal: Find a nonce that makes the hash start with 'difficulty' zeros
     
     Example with difficulty=4:
-    - Try nonce=0: hash = 5a3b2c1d... (no leading zeros) ❌
-    - Try nonce=1: hash = 9f8e7d6c... (no leading zeros) ❌
-    - Try nonce=2: hash = 3c4d5e6f... (no leading zeros) ❌
+    - Try nonce=0: hash = 5a3b2c1d... (no leading zeros) 
+    - Try nonce=1: hash = 9f8e7d6c... (no leading zeros) 
+    - Try nonce=2: hash = 3c4d5e6f... (no leading zeros) 
     - ...
-    - Try nonce=45832: hash = 0000a1b2... (4 leading zeros!) ✓
+    - Try nonce=45832: hash = 0000a1b2... (4 leading zeros!) 
     
     Why this matters:
     - Makes mining computationally expensive
