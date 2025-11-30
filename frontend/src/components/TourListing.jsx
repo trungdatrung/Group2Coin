@@ -1,3 +1,16 @@
+/**
+ * TourListing Component
+ * 
+ * Displays all available tours in a card-based grid layout.
+ * Users can browse, filter by location, view details, and initiate bookings.
+ * 
+ * Features:
+ * - Responsive grid layout with hover effects
+ * - Search and filtering capabilities
+ * - Detail modal view with booking functionality
+ * - Error handling with user-friendly messages
+ */
+
 import React, { useState, useEffect } from 'react';
 import { travelAPI } from '../services/travel';
 import BookingForm from './BookingForm';
@@ -5,15 +18,18 @@ import Reviews from './Reviews';
 import './TourListing.css';
 
 function TourListing({ wallet }) {
+  // State management for tours, loading, selection, and error handling
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTour, setSelectedTour] = useState(null);
   const [error, setError] = useState(null);
 
+  // Load tours when component mounts or wallet changes
   useEffect(() => {
     loadTours();
   }, [wallet]);
 
+  // Fetch all available tours from the backend
   const loadTours = async () => {
     try {
       setLoading(true);
