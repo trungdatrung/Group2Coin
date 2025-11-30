@@ -28,11 +28,28 @@ function TourListing({ wallet }) {
   };
 
   if (loading) {
-    return <div className="tour-listing"><div className="loading">Loading tours...</div></div>;
+    return (
+      <div className="tour-listing">
+        <div className="listing-header">
+          <h2>Explore Tours</h2>
+          <p>Find and book your next adventure</p>
+        </div>
+        <div className="loading">Loading tours...</div>
+      </div>
+    );
   }
 
   if (!tours || tours.length === 0) {
-    return <div className="tour-listing"><div className="no-tours">No tours available</div></div>;
+    return (
+      <div className="tour-listing">
+        <div className="listing-header">
+          <h2>Explore Tours</h2>
+          <p>Find and book your next adventure</p>
+          <button className="refresh-btn" onClick={loadTours}>🔄 Refresh</button>
+        </div>
+        <div className="no-tours">No tours available yet. Check back soon!</div>
+      </div>
+    );
   }
 
   return (

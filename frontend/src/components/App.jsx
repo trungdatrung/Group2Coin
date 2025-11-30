@@ -11,6 +11,7 @@ import BlockchainViewer from './components/BlockchainViewer';
 import TourListing from './components/TourListing';
 import MyBookings from './components/MyBookings';
 import TourManagement from './components/TourManagement';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
 function App() {
@@ -20,23 +21,35 @@ function App() {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard key="dashboard" />;
       case 'wallet':
-        return <Wallet wallet={wallet} setWallet={setWallet} />;
+        return <Wallet key="wallet" wallet={wallet} setWallet={setWallet} />;
       case 'transactions':
-        return <Transactions wallet={wallet} />;
+        return <Transactions key="transactions" wallet={wallet} />;
       case 'mining':
-        return <Mining wallet={wallet} />;
+        return <Mining key="mining" wallet={wallet} />;
       case 'blockchain':
-        return <BlockchainViewer />;
+        return <BlockchainViewer key="blockchain" />;
       case 'tours':
-        return <TourListing wallet={wallet} />;
+        return (
+          <ErrorBoundary key="tours">
+            <TourListing wallet={wallet} />
+          </ErrorBoundary>
+        );
       case 'my-bookings':
-        return <MyBookings wallet={wallet} />;
+        return (
+          <ErrorBoundary key="my-bookings">
+            <MyBookings wallet={wallet} />
+          </ErrorBoundary>
+        );
       case 'admin-tours':
-        return <TourManagement wallet={wallet} />;
+        return (
+          <ErrorBoundary key="admin-tours">
+            <TourManagement wallet={wallet} />
+          </ErrorBoundary>
+        );
       default:
-        return <Dashboard />;
+        return <Dashboard key="dashboard" />;
     }
   };
 

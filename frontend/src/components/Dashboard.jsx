@@ -13,7 +13,9 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
+    // Only start interval when component mounts
     const interval = setInterval(loadDashboardData, 5000);
+    // Clear interval when component unmounts
     return () => clearInterval(interval);
   }, []);
 
