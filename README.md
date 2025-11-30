@@ -1,79 +1,34 @@
-# Group2Coin Full Source Code Explanation
+# Group2Coin - Blockchain + Travel Booking Platform
 
-Let me explain the entire project architecture and how everything works together.
+Group2Coin is a full-stack educational blockchain application with an integrated travel & tour booking system.
 
-## **Project Overview**
-
-Group2Coin is a full-stack blockchain cryptocurrency application with:
-- **Backend**: Python/Flask REST API managing the blockchain
-- **Frontend**: React single-page application for user interaction
-
----
-
-## **BACKEND ARCHITECTURE**
-
-### **1. Cryptographic Utilities (`backend/utils/crypto.py`)**
-
-This module handles all cryptographic operations:
-
-```python
-def calculate_hash(data):
-    """
-    Uses SHA-256 to create unique fingerprints of data
-    - Converts dictionaries/objects to JSON strings
-    - Creates a 64-character hexadecimal hash
-    - Used for: block hashes, transaction hashes, wallet addresses
-    """
-```
-
-**Why SHA-256?** It's:
-- Deterministic (same input = same output)
-- One-way (cannot reverse the hash)
-- Collision-resistant (virtually impossible to find two inputs with same hash)
-
-```python
-def generate_key_pair():
-    """
-    Creates RSA 2048-bit public-private key pairs
-    - Private key: Used to sign transactions (proves ownership)
-    - Public key: Used to verify signatures and receive coins
-    - Returns both keys in PEM format (text-based encoding)
-    """
-```
-
-**RSA Encryption**: Asymmetric cryptography where:
-- You can encrypt with public key, decrypt with private key
-- You can sign with private key, verify with public key
-## Group2Coin
-
-Group2Coin is a small educational full-stack blockchain application implemented with:
-
-- Backend: Python + Flask (REST API)
-- Frontend: React (single-page app)
-
-This repository contains a basic blockchain implementation (blocks, transactions, proof-of-work), a wallet generator, a simple mining flow, and a React UI that interacts with the Flask API.
+**Stack:**
+- Backend: Python 3 + Flask REST API
+- Frontend: React 18 with Axios
+- Blockchain: SHA-256 hashing, RSA-2048 signatures, proof-of-work mining
+- Travel System: In-memory tour/booking/review management
 
 ---
 
-## Quick Start (development)
+## Quick Start (Development)
 
-Requirements:
+**Requirements:**
 - Python 3.8+
 - Node.js 16+ / npm
 
-1) Start the backend
+### 1. Start Backend
 
 ```bash
 cd backend
-python3 -m venv venv        # create venv if needed
+python3 -m venv venv        # create if needed
 source venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
 
-The backend runs on `http://localhost:5000` and exposes the API under `/api`.
+Backend runs on `http://localhost:5000` with API at `/api` and `/travel`.
 
-2) Start the frontend (dev server)
+### 2. Start Frontend
 
 ```bash
 cd frontend
@@ -81,512 +36,259 @@ npm install
 npm start
 ```
 
-The frontend runs on `http://localhost:3000` by default and calls the backend at `http://localhost:5000/api`.
+Frontend runs on `http://localhost:3000` and calls `http://localhost:5000` for APIs.
 
-## Build (production)
+## Build (Production)
 
 ```bash
 npm --prefix frontend run build
-# Serve the build/ directory with a static server
+# Serve frontend/build/ with a static server
 ```
 
-## API Reference (most-used endpoints)
+---
 
-- GET `/api/blockchain` — returns the full chain, difficulty, mining_reward and a snapshot of pending transactions
-- GET `/api/blockchain/pending` — returns pending transactions
-- GET `/api/blockchain/difficulty` — returns current difficulty
-- GET `/api/blockchain/validate` — returns chain validity
+## API Reference
 
-- POST `/api/wallet/create` — create a new wallet (returns address, public_key, private_key)
-- GET `/api/wallet/<address>/balance` — get calculated balance for an address
-- GET `/api/wallet/<address>/transactions` — return transactions involving the address
-- GET `/api/wallet/export/<address>` — download JSON export of a wallet
-- POST `/api/wallet/import` — import wallet JSON into server memory
+### Blockchain Endpoints (`/api`)
 
-- POST `/api/transaction/create` — create & sign a transaction (sender public key, recipient, amount, private_key)
-- GET `/api/transaction/pending` — pending transactions (short view)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/blockchain` | Full chain, difficulty, mining reward, pending transactions |
+| GET | `/blockchain/pending` | Pending transactions |
+| GET | `/blockchain/validate` | Chain validity status |
+| POST | `/wallet/create` | Create new wallet (returns address, keys) |
+| GET | `/wallet/<addr>/balance` | Get wallet balance |
+| GET | `/wallet/<addr>/transactions` | Get wallet's transactions |
+| POST | `/transaction/create` | Create & sign transaction |
+| POST | `/mine` | Mine pending transactions (body: `{miner_address}`) |
 
-- POST `/api/mine` — mine pending transactions; body: `{ "miner_address": "..." }`
-- GET `/api/blockchain/reward` — current mining reward
+### Travel Endpoints (`/travel`)
 
-## Notes, recent fixes & behavior
+#### Admin Routes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/admin/tour/create` | Create new tour |
+| PUT | `/admin/tour/<id>/update` | Update tour details |
+| GET | `/admin/tours/<addr>` | Get all tours by admin |
+| GET | `/admin/bookings/<addr>` | Get all bookings for admin's tours |
+| GET | `/admin/stats/<addr>` | Get admin stats (revenue, bookings, etc.) |
 
-- Wallets are stored in-memory on the server in `backend/api/routes.py`. They are ephemeral and will be lost on server restart. If you need persistence, add a simple file/db store.
-- The `/api/blockchain` endpoint now includes a `pending_transactions` array so the frontend can show pending counts without extra requests.
-- Frontend defensive updates: `frontend/src/components/BlockchainViewer.jsx` now guards accesses to `pending_transactions` and `block.transactions` to avoid runtime errors if data is missing.
-- Dashboard refresh behavior: `frontend/src/components/Dashboard.jsx` now sets a loading state when refreshing, disables the Refresh button while fetching, and shows an alert on failure.
+#### User Routes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/tours` | List all available tours |
+| GET | `/tours/<id>` | Get tour details |
+| POST | `/booking/create` | Create booking for tour |
+| POST | `/booking/<id>/confirm` | Confirm booking (after payment) |
+| POST | `/booking/<id>/cancel` | Cancel pending booking |
+| GET | `/user/bookings/<addr>` | Get user's bookings |
+
+#### Review Routes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/review/add` | Submit review for completed tour |
+| GET | `/reviews/<tour_id>` | Get all reviews for tour |
+
+---
+
+## Features
+
+### Blockchain Features
+- ✅ Wallet creation (RSA-2048 key pairs)
+- ✅ Transaction creation & digital signatures
+- ✅ Proof-of-work mining (difficulty 4)
+- ✅ Full chain validation
+- ✅ Real-time blockchain viewer
+- ✅ Transaction history & balance tracking
+
+### Travel & Booking Features
+- ✅ Admin tour creation with pricing, dates, itinerary
+- ✅ User tour browsing with search/filtering
+- ✅ Booking creation with participant validation
+- ✅ Booking management (view, cancel, confirm)
+- ✅ Rating & review system (1-5 stars)
+- ✅ Admin dashboard with stats (revenue, bookings, tours)
+- ✅ Responsive UI for mobile/desktop
+
+### Frontend Components
+
+**Blockchain:**
+- Dashboard - Real-time stats
+- Wallet - Create/import/manage wallets
+- Transactions - Send coins
+- Mining - Mine blocks
+- BlockchainViewer - Explore full chain
+
+**Travel:**
+- TourListing - Browse tours with detail modal
+- BookingForm - Create bookings with validation
+- MyBookings - View user's bookings (pending/confirmed/completed)
+- TourManagement - Admin panel (create tours, view bookings, stats)
+- Reviews - Rate and review completed tours
+
+---
+
+## Recent Changes & Fixes
+
+**Travel System Integration (Latest)**
+- Added TourManagement admin component with stats dashboard
+- Created MyBookings user view with booking status filtering
+- Implemented Review system with star ratings and comments
+- Wired BookingForm to TourListing detail modal
+- All components integrated with backend travel API endpoints
+
+**Blockchain Fixes**
+- `/api/blockchain` now includes `pending_transactions` array
+- BlockchainViewer guards against missing data (defensive coding)
+- Dashboard refresh button now shows loading state & disable while fetching
+
+**Repository Hygiene**
+- Added `.gitignore` for venv, `__pycache__`, node_modules, build artifacts
+- Updated README with practical quick-start guide
+- Cleaned up git tracking (removed build/cache files)
+
+---
+
+## Architecture Notes
+
+### Travel System Design
+- **Manager Pattern**: `TravelManager` handles all tour/booking/review state (in-memory)
+- **Models**: `Tour`, `Booking`, `Review` classes with `to_dict()` serialization
+- **API Structure**: Admin routes under `/admin/*`, user routes under `/tours`, `/booking/*`, `/user/*`
+- **Status Flow**: Booking → pending → confirmed (after payment) → completed
+
+### Blockchain Design
+- **In-Memory Storage**: Wallets and blockchain stored in Flask memory (ephemeral)
+- **UTXO Model**: Balance calculated by summing all transactions
+- **Difficulty Adjustment**: Current difficulty = 4 (leading zeros in hash)
+- **Proof-of-Work**: Requires finding valid nonce that hashes to target
+
+### Payment Integration (Todo)
+- Currently bookings are created but payment confirmation uses placeholder fields
+- Future: Integrate blockchain transactions for payment confirmation
+- Design: When booking → confirm, validate G2C payment tx hash on backend
+
+---
 
 ## Testing
 
-- A quick backend smoke test script is available at `backend/test_setup.py` — run `python3 backend/test_setup.py` to verify imports and simple blockchain operations.
+Run backend smoke test:
 
-## Development notes & TODOs
+```bash
+python3 backend/test_setup.py
+```
 
-- Improve wallet persistence (file or database) to avoid in-memory loss.
-- Add more robust error handling and user-friendly toasts instead of `alert()`.
-- Add unit tests for blockchain functions (mining, validation, balances).
+Tests:
+- Blockchain initialization
+- Transaction creation & signing
+- Block mining
+- Chain validation
 
-## Directory layout
+---
+
+## Development TODOs
+
+- [ ] Persist wallets to file/database (currently ephemeral)
+- [ ] Wire booking confirmation to blockchain transactions (payment validation)
+- [ ] Add authentication/authorization layer for admin routes
+- [ ] Unit tests for blockchain functions
+- [ ] E2E test for booking → payment → review flow
+- [ ] Tour search/filter on frontend
+- [ ] Notification system for booking updates
+- [ ] Refund handling for cancelled bookings
+
+---
+
+## Directory Structure
 
 ```
 backend/
-  ├─ api/
-  ├─ blockchain/
-  ├─ utils/
-  ├─ wallet/
-  └─ main.py
-
-frontend/
-  ├─ src/
-  └─ package.json
-```
-
-## How I validated changes
-
-- Ran `python3 backend/test_setup.py` — backend imports and basic transactions succeeded.
-- Built the frontend with `npm run build` to ensure components compile (there is an unrelated ESLint warning in `Wallet.jsx`).
-
-## License
-
-This repository is for educational purposes. Add a license file if you want to share publicly.
-
-----
-
-If you'd like, I can also open a small PR with these README changes, or add CI steps / unit tests next. Let me know which you'd prefer.
-
-    pendingTransactions: 0,
-    difficulty: 0,
-    isValid: true,
-  });
-
-  useEffect(() => {
-    loadDashboardData();
-    const interval = setInterval(loadDashboardData, 5000);  // Refresh every 5s
-    return () => clearInterval(interval);  // Cleanup on unmount
-  }, []);
-
-  const loadDashboardData = async () => {
-    // Makes 4 parallel API calls
-    const [blockchainRes, pendingRes, difficultyRes, validationRes] = 
-      await Promise.all([
-        blockchainAPI.getBlockchain(),
-        blockchainAPI.getPendingTransactions(),
-        blockchainAPI.getDifficulty(),
-        blockchainAPI.validateBlockchain(),
-      ]);
-    
-    // Updates state with all data
-    setStats({ ... });
-  };
-```
-
-**Features:**
-- Real-time stats display
-- Auto-refresh every 5 seconds
-- Blockchain validation status
-- Network overview
-
----
-
-### **5. Wallet Component (`frontend/src/components/Wallet.jsx`)**
-
-```javascript
-function Wallet({ wallet, setWallet }) {  // Receives wallet as prop
-  const [balance, setBalance] = useState(null);
-  const [transactions, setTransactions] = useState([]);
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
-
-  useEffect(() => {
-    if (wallet) {
-      loadWalletData();  // Auto-load balance when wallet exists
-    }
-  }, [wallet]);
-
-  const createNewWallet = async () => {
-    const response = await walletAPI.createWallet();
-    setWallet(response.data);  // Updates global wallet state
-    alert('Wallet created! Save your private key!');
-  };
-```
-
-**Features:**
-- Create new wallets
-- Display address, public key, private key
-- Toggle private key visibility (security)
-- Copy keys to clipboard
-- Show balance and transaction history
-- Persistent wallet across navigation
-
-**Security:**
-- Private key hidden by default
-- Warning messages
-- Copy functionality for safe storage
-
----
-
-### **6. Transactions Component (`frontend/src/components/Transactions.jsx`)**
-
-```javascript
-function Transactions({ wallet }) {
-  const [formData, setFormData] = useState({
-    senderPublicKey: '',
-    senderPrivateKey: '',
-    recipientAddress: '',
-    amount: '',
-  });
-
-  useEffect(() => {
-    if (wallet) {
-      // Auto-fill keys from wallet
-      setFormData(prev => ({
-        ...prev,
-        senderPublicKey: wallet.public_key,
-        senderPrivateKey: wallet.private_key,
-      }));
-    }
-  }, [wallet]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validation
-    if (amount <= 0) {
-      alert('Amount must be positive');
-      return;
-    }
-    
-    // Create transaction
-    const response = await transactionAPI.createTransaction(
-      formData.senderPublicKey,
-      formData.recipientAddress,
-      amount,
-      formData.senderPrivateKey
-    );
-    
-    alert('Transaction submitted!');
-  };
-```
-
-**Features:**
-- Auto-fills keys from global wallet
-- Form validation
-- Transaction submission
-- Success/error feedback
-- Clear form functionality
-
-**Transaction Flow:**
-1. User fills recipient and amount
-2. Keys auto-filled from wallet
-3. Frontend sends to backend
-4. Backend validates and signs
-5. Transaction added to pending pool
-6. User receives confirmation
-
----
-
-### **7. Mining Component (`frontend/src/components/Mining.jsx`)**
-
-```javascript
-function Mining({ wallet }) {
-  const [minerAddress, setMinerAddress] = useState('');
-  const [mining, setMining] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    if (wallet) {
-      setMinerAddress(wallet.address);  // Auto-fill miner address
-    }
-  }, [wallet]);
-
-  const handleMine = async () => {
-    if (!minerAddress) {
-      alert('Enter miner address');
-      return;
-    }
-
-    setMining(true);  // Show loading state
-    
-    try {
-      const response = await miningAPI.mineBlock(minerAddress);
-      alert('Block mined! You earned 50 G2C!');
-    } catch (error) {
-      alert('Mining failed');
-    }
-    
-    setMining(false);  // Hide loading
-  };
-```
-
-**Features:**
-- Real-time pending transaction count
-- Current difficulty display
-- Mining reward information
-- Auto-fill miner address from wallet
-- Mining progress indicator
-- Difficulty adjustment controls
-
-**Mining Process:**
-1. User clicks "Start Mining"
-2. Frontend calls backend mine endpoint
-3. Backend performs proof-of-work
-4. May take seconds to minutes depending on difficulty
-5. Block added to chain
-6. Miner receives 50 G2C reward
-
----
-
-### **8. Blockchain Viewer (`frontend/src/components/BlockchainViewer.jsx`)**
-
-```javascript
-function BlockchainViewer() {
-  const [blockchain, setBlockchain] = useState(null);
-  const [expandedBlocks, setExpandedBlocks] = useState(new Set([0]));
-
-  const loadBlockchain = async () => {
-    const response = await blockchainAPI.getBlockchain();
-    setBlockchain(response.data);
-  };
-
-  const toggleBlock = (index) => {
-    setExpandedBlocks(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);  // Collapse
-      } else {
-        newSet.add(index);  // Expand
-      }
-      return newSet;
-    });
-  };
-```
-
-**Features:**
-- View all blocks in the chain
-- Expand/collapse individual blocks
-- View block details (hash, previous hash, nonce)
-- View all transactions in each block
-- Genesis block badge
-- Expand all / Collapse all functionality
-
-**Data Display:**
-- Block index and timestamp
-- Full block hash
-- Previous block hash (shows chain linkage)
-- Nonce (proof-of-work)
-- All transactions with sender, recipient, amount
-
----
-
-## **KEY CONCEPTS EXPLAINED**
-
-### **1. How Blockchain Works**
-
-```
-Genesis Block → Block 1 → Block 2 → Block 3
-    ↓              ↓          ↓          ↓
-  Hash: 0x00abc  Hash:0x00def Hash:0x00xyz ...
-                    ↑
-              prev_hash: 0x00abc
-```
-
-Each block:
-- Contains transactions
-- Has a hash (unique fingerprint)
-- References previous block's hash
-- Cannot be altered without breaking the chain
-
-### **2. Proof of Work**
-
-```python
-target = '0000'  # difficulty = 4
-nonce = 0
-
-while True:
-    hash = calculate_hash(block_data + nonce)
-    if hash.startswith(target):
-        # Found valid nonce!
-        break
-    nonce += 1  # Try next nonce
-```
-
-**Why it matters:**
-- Makes mining difficult and expensive
-- Prevents spam/attacks
-- Secures the network
-- Higher difficulty = more security
-
-### **3. Digital Signatures**
-
-```
-Transaction Creation:
-1. User creates transaction: "Send 10 G2C to Bob"
-2. Hash the transaction: hash = SHA256(transaction)
-3. Sign the hash: signature = RSA_sign(hash, private_key)
-4. Attach signature to transaction
-
-Transaction Verification:
-1. Receive transaction with signature
-2. Hash the transaction data
-3. Verify: RSA_verify(hash, signature, public_key)
-4. If valid: Sender authorized this transaction
-```
-
-### **4. Balance Calculation (UTXO Model Simplified)**
-
-```javascript
-balance = 0
-
-for (block in blockchain) {
-  for (tx in block.transactions) {
-    if (tx.sender == myAddress) {
-      balance -= tx.amount  // Spent money
-    }
-    if (tx.recipient == myAddress) {
-      balance += tx.amount  // Received money
-    }
-  }
-}
-
-return balance
-```
-
-### **5. Mining Incentive**
-
-```
-Pending Transactions:
-- Alice → Bob: 5 G2C
-- Charlie → Dave: 10 G2C
-- Eve → Frank: 3 G2C
-
-Miner mines block:
-- Includes all pending transactions
-- Adds reward transaction: MINING_REWARD → Miner: 50 G2C
-- Performs proof-of-work
-- Block added to chain
-
-Result:
-- Alice, Charlie, Eve transactions confirmed
-- Bob, Dave, Frank receive coins
-- Miner receives 50 G2C reward
-```
-
----
-
-## **SECURITY FEATURES**
-
-### **1. Cryptographic Security**
-- SHA-256 hashing (impossible to reverse)
-- RSA-2048 encryption (extremely strong)
-- Digital signatures (proves ownership)
-
-### **2. Blockchain Immutability**
-```
-If you try to change Block 1:
-- Block 1 hash changes
-- Block 2's previous_hash no longer matches
-- Chain breaks!
-- Everyone knows it's tampered
-```
-
-### **3. Proof of Work**
-- Must perform computational work to add blocks
-- Prevents spam attacks
-- Makes history rewriting computationally infeasible
-
-### **4. Transaction Validation**
-- Signature verification
-- Balance checking
-- Double-spend prevention
-
----
-
-## **DATA FLOW EXAMPLE**
-
-Let's trace a complete transaction:
-
-**1. Alice creates a wallet:**
-```
-Frontend: Click "Create Wallet"
-→ API call: POST /api/wallet/create
-→ Backend: Generate RSA keys, create wallet
-→ Response: {address, public_key, private_key}
-→ Frontend: Display wallet, user saves keys
-```
-
-**2. Alice receives 50 G2C from mining:**
-```
-Frontend: Enter address, click "Mine"
-→ API call: POST /api/mine {miner_address: "alice"}
-→ Backend: Create block with reward transaction
-→ Backend: Perform proof-of-work
-→ Backend: Add block to chain
-→ Response: Block mined successfully
-→ Frontend: Show success message
-```
-
-**3. Alice sends 10 G2C to Bob:**
-```
-Frontend: Fill form (Bob's address, amount:10)
-→ Frontend: Sign transaction with Alice's private key
-→ API call: POST /api/transaction/create
-→ Backend: Verify signature
-→ Backend: Check Alice has balance ≥ 10
-→ Backend: Add to pending pool
-→ Response: Transaction pending
-→ Frontend: Show confirmation
-```
-
-**4. Someone mines the pending transaction:**
-```
-Frontend: Click "Mine"
-→ API call: POST /api/mine
-→ Backend: Include Alice→Bob transaction in block
-→ Backend: Perform proof-of-work
-→ Backend: Add block to chain
-→ Alice balance: 50 - 10 = 40 G2C
-→ Bob balance: 0 + 10 = 10 G2C
-→ Transaction confirmed!
-```
-
----
-
-## **FILE STRUCTURE SUMMARY**
-
-```
-backend/
-├── blockchain/          # Core blockchain logic
-│   ├── block.py        # Block structure + mining
-│   ├── blockchain.py   # Chain management
-│   └── transaction.py  # Transaction handling
+├── api/                    # Blockchain API routes
+│   ├── routes.py
+│   └── __init__.py
+├── blockchain/
+│   ├── block.py
+│   ├── blockchain.py
+│   ├── transaction.py
+│   └── __init__.py
+├── travel/                 # Travel/booking system
+│   ├── manager.py         # Data models & business logic
+│   ├── routes.py          # API endpoints
+│   └── __init__.py
 ├── wallet/
-│   └── wallet.py       # Wallet creation
+│   ├── wallet.py
+│   └── __init__.py
 ├── utils/
-│   └── crypto.py       # Cryptographic functions
-├── api/
-│   └── routes.py       # REST API endpoints
-└── main.py             # Flask app entry point
+│   ├── crypto.py
+│   └── __init__.py
+├── main.py                # Flask app factory
+├── requirements.txt
+└── test_setup.py
 
 frontend/
 ├── src/
-│   ├── components/     # UI components
-│   │   ├── Header.jsx
-│   │   ├── Dashboard.jsx
+│   ├── components/
+│   │   ├── App.jsx                 # Main app with routing
+│   │   ├── Header.jsx              # Navigation
+│   │   ├── Dashboard.jsx           # Blockchain overview
 │   │   ├── Wallet.jsx
 │   │   ├── Transactions.jsx
 │   │   ├── Mining.jsx
-│   │   └── BlockchainViewer.jsx
+│   │   ├── BlockchainViewer.jsx
+│   │   ├── TourListing.jsx         # Browse tours
+│   │   ├── BookingForm.jsx         # Create booking
+│   │   ├── MyBookings.jsx          # User's bookings
+│   │   ├── TourManagement.jsx      # Admin panel
+│   │   ├── Reviews.jsx             # Rating/reviews
+│   │   └── *.css                   # Component styles
 │   ├── services/
-│   │   └── api.js      # Backend communication
-│   ├── App.jsx         # Main app component
-│   └── index.js        # React entry point
+│   │   ├── api.js                  # Blockchain API client
+│   │   └── travel.js               # Travel API client
+│   ├── App.css
+│   ├── index.js
+│   └── index.css
+├── public/
+├── build/                  # Production build (npm run build)
+└── package.json
 ```
 
 ---
 
-This is a complete, working blockchain implementation! It demonstrates:
-- **Cryptography**: Hashing, encryption, digital signatures
-- **Distributed Systems**: Blockchain, consensus, validation
-- **Web Development**: REST APIs, React, state management
-- **Security**: Private keys, signatures, proof-of-work
+## How to Use
 
-The code is educational but includes real production concepts used in actual cryptocurrencies like Bitcoin and Ethereum!
+### For Users
+
+1. **Create Wallet**: Go to Wallet tab, click "Create Wallet", save your keys
+2. **Mine Coins** (Optional): Go to Mining, click "Mine" to earn 50 G2C per block
+3. **Browse Tours**: Go to "Tours" tab, click any tour to see details
+4. **Book Tour**: Click "Book Now" in tour detail, fill participant count and requests
+5. **View Bookings**: Go to "My Bookings" to see status and manage reservations
+6. **Leave Review**: After tour completes, click "Leave a Review" and rate it
+
+### For Admins
+
+1. Go to "Admin Panel" tab
+2. Create tours with title, description, location, pricing, dates
+3. View all your tours, bookings, and revenue stats
+4. Monitor booking confirmations
+
+---
+
+## Security Notes
+
+- **Private Keys**: Never share or commit to git. Downloaded wallet files are local-only
+- **In-Memory Storage**: Data is lost on server restart (dev only, add DB for production)
+- **Signatures**: All transactions must be signed with private key
+- **Wallet Addresses**: Derived from public key hash (SHA-256)
+
+---
+
+## License
+
+Educational use only. Add LICENSE file before sharing publicly.
+
+---
+
+## Support
+
+For questions or issues, see the code comments and API routes for implementation details.
