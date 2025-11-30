@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { travelAPI } from '../services/travel';
+import Reviews from './Reviews';
 import './MyBookings.css';
 
 function MyBookings({ wallet }) {
@@ -7,6 +8,7 @@ function MyBookings({ wallet }) {
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [showReviewTourId, setShowReviewTourId] = useState(null);
 
   useEffect(() => {
     if (wallet && wallet.address) {
@@ -228,11 +230,29 @@ function MyBookings({ wallet }) {
                       </button>
                     )}
                     {item.booking.status === 'completed' && (
-                      <button className="action-button review-btn">
+                      <button
+                        className="action-button review-btn"
+                        onClick={() => setShowReviewTourId(item.tour.tour_id)}
+                      >
                         Leave a Review
                       </button>
                     )}
                   </div>
+
+                  {showReviewTourId === item.tour.tour_id && (
+                    <div className="review-modal-wrapper">
+                      <div className="review-modal-overlay"></div>
+                      <div className="review-modal">
+                        <button
+                          className="close-review"
+                          onClick={() => setShowReviewTourId(null)}
+                        >
+                          ✕
+                        </button>
+                        <Reviews tourId={item.tour.tour_id} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

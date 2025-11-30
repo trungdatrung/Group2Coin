@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { travelAPI } from '../services/travel';
 import BookingForm from './BookingForm';
+import Reviews from './Reviews';
 import './TourListing.css';
 
 function TourListing({ wallet }) {
@@ -124,6 +125,8 @@ function TourDetail({ tour, wallet, onClose }) {
               </div>
             </div>
           </section>
+
+          <Reviews tourId={tour.tour_id} />
         </div>
 
         <div className="detail-footer">
