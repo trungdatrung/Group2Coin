@@ -24,9 +24,9 @@ function App() {
       case 'wallet':
         return <Wallet wallet={wallet} setWallet={setWallet} />;
       case 'transactions':
-        return <Transactions />;
+        return <Transactions wallet={wallet} />;
       case 'mining':
-        return <Mining />;
+        return <Mining wallet={wallet} />;
       case 'blockchain':
         return <BlockchainViewer />;
       case 'tours':
