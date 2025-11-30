@@ -44,526 +44,116 @@ def generate_key_pair():
 **RSA Encryption**: Asymmetric cryptography where:
 - You can encrypt with public key, decrypt with private key
 - You can sign with private key, verify with public key
-- 2048 bits = extremely secure (would take centuries to crack)
+## Group2Coin
 
-```python
-def sign_data(private_key_pem, data):
-    """
-    Creates a digital signature using PSS padding
-    - Proves that the transaction was created by the private key holder
-    - Cannot be forged without the private key
-    - Returns hexadecimal signature string
-    """
+Group2Coin is a small educational full-stack blockchain application implemented with:
 
-def verify_signature(public_key_pem, data, signature_hex):
-    """
-    Verifies that a signature matches the data and public key
-    - Prevents transaction tampering
-    - Returns True/False
-    """
-```
+- Backend: Python + Flask (REST API)
+- Frontend: React (single-page app)
+
+This repository contains a basic blockchain implementation (blocks, transactions, proof-of-work), a wallet generator, a simple mining flow, and a React UI that interacts with the Flask API.
 
 ---
 
-### **2. Transaction System (`backend/blockchain/transaction.py`)**
+## Quick Start (development)
 
-```python
-class Transaction:
-    def __init__(self, sender, recipient, amount, signature=None, timestamp=None):
-        """
-        Represents a transfer of Group2Coin between addresses
-        
-        Parameters:
-        - sender: Public key of sender (or 'MINING_REWARD' for mining)
-        - recipient: Public key/address of recipient
-        - amount: How many G2C to transfer
-        - signature: Digital signature proving sender authorized this
-        - timestamp: When transaction was created
-        """
+Requirements:
+- Python 3.8+
+- Node.js 16+ / npm
+
+1) Start the backend
+
+```bash
+cd backend
+python3 -m venv venv        # create venv if needed
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
 ```
 
-**Transaction Flow:**
-1. User creates transaction with sender, recipient, amount
-2. Transaction is signed with sender's private key
-3. Signature proves ownership without revealing private key
-4. Transaction goes into pending pool
-5. Miner includes it in a block
-6. Transaction becomes permanent on blockchain
+The backend runs on `http://localhost:5000` and exposes the API under `/api`.
 
-```python
-def sign_transaction(self, private_key):
-    """
-    Signs the transaction data (excluding the signature itself)
-    - Creates a hash of: sender + recipient + amount + timestamp
-    - Signs this hash with the private key
-    - Stores signature in the transaction
-    """
+2) Start the frontend (dev server)
 
-def is_valid(self):
-    """
-    Validates the transaction:
-    1. Mining rewards are always valid (system-generated)
-    2. Regular transactions must have signatures
-    3. Signature must match the public key and data
-    """
+```bash
+cd frontend
+npm install
+npm start
 ```
 
----
+The frontend runs on `http://localhost:3000` by default and calls the backend at `http://localhost:5000/api`.
 
-### **3. Block Structure (`backend/blockchain/block.py`)**
+## Build (production)
 
-```python
-class Block:
-    def __init__(self, index, transactions, previous_hash, timestamp=None, nonce=0):
-        """
-        A block is a container for transactions, linked to previous block
-        
-        Parameters:
-        - index: Position in the chain (0, 1, 2, 3...)
-        - transactions: List of Transaction objects in this block
-        - previous_hash: Hash of the previous block (creates the chain)
-        - timestamp: When block was created
-        - nonce: Number used in proof-of-work mining
-        """
+```bash
+npm --prefix frontend run build
+# Serve the build/ directory with a static server
 ```
 
-**Block Structure Visualization:**
+## API Reference (most-used endpoints)
+
+- GET `/api/blockchain` — returns the full chain, difficulty, mining_reward and a snapshot of pending transactions
+- GET `/api/blockchain/pending` — returns pending transactions
+- GET `/api/blockchain/difficulty` — returns current difficulty
+- GET `/api/blockchain/validate` — returns chain validity
+
+- POST `/api/wallet/create` — create a new wallet (returns address, public_key, private_key)
+- GET `/api/wallet/<address>/balance` — get calculated balance for an address
+- GET `/api/wallet/<address>/transactions` — return transactions involving the address
+- GET `/api/wallet/export/<address>` — download JSON export of a wallet
+- POST `/api/wallet/import` — import wallet JSON into server memory
+
+- POST `/api/transaction/create` — create & sign a transaction (sender public key, recipient, amount, private_key)
+- GET `/api/transaction/pending` — pending transactions (short view)
+
+- POST `/api/mine` — mine pending transactions; body: `{ "miner_address": "..." }`
+- GET `/api/blockchain/reward` — current mining reward
+
+## Notes, recent fixes & behavior
+
+- Wallets are stored in-memory on the server in `backend/api/routes.py`. They are ephemeral and will be lost on server restart. If you need persistence, add a simple file/db store.
+- The `/api/blockchain` endpoint now includes a `pending_transactions` array so the frontend can show pending counts without extra requests.
+- Frontend defensive updates: `frontend/src/components/BlockchainViewer.jsx` now guards accesses to `pending_transactions` and `block.transactions` to avoid runtime errors if data is missing.
+- Dashboard refresh behavior: `frontend/src/components/Dashboard.jsx` now sets a loading state when refreshing, disables the Refresh button while fetching, and shows an alert on failure.
+
+## Testing
+
+- A quick backend smoke test script is available at `backend/test_setup.py` — run `python3 backend/test_setup.py` to verify imports and simple blockchain operations.
+
+## Development notes & TODOs
+
+- Improve wallet persistence (file or database) to avoid in-memory loss.
+- Add more robust error handling and user-friendly toasts instead of `alert()`.
+- Add unit tests for blockchain functions (mining, validation, balances).
+
+## Directory layout
+
 ```
-Block #1                          Block #2
-┌─────────────────────┐          ┌─────────────────────┐
-│ Index: 1            │          │ Index: 2            │
-│ Previous: 0x000abc  │◄─────────│ Previous: 0x000def  │
-│ Transactions: [...]  │          │ Transactions: [...]  │
-│ Nonce: 45832        │          │ Nonce: 93021        │
-│ Hash: 0x000def      │          │ Hash: 0x000xyz      │
-└─────────────────────┘          └─────────────────────┘
-```
+backend/
+  ├─ api/
+  ├─ blockchain/
+  ├─ utils/
+  ├─ wallet/
+  └─ main.py
 
-```python
-def calculate_hash(self):
-    """
-    Creates unique fingerprint of the block
-    - Combines: index + transactions + previous_hash + timestamp + nonce
-    - Any tiny change = completely different hash
-    - This is what makes blockchain tamper-proof
-    """
-
-def mine_block(self, difficulty):
-    """
-    PROOF OF WORK ALGORITHM
-    
-    Goal: Find a nonce that makes the hash start with 'difficulty' zeros
-    
-    Example with difficulty=4:
-    - Try nonce=0: hash = 5a3b2c1d... (no leading zeros) 
-    - Try nonce=1: hash = 9f8e7d6c... (no leading zeros) 
-    - Try nonce=2: hash = 3c4d5e6f... (no leading zeros) 
-    - ...
-    - Try nonce=45832: hash = 0000a1b2... (4 leading zeros!) 
-    
-    Why this matters:
-    - Makes mining computationally expensive
-    - Prevents spam attacks (must do work to add blocks)
-    - Secures the blockchain (would need massive compute to alter history)
-    """
-```
-
-**Mining Difficulty:**
-- Difficulty 1: ~16 attempts average (hash starts with 0)
-- Difficulty 2: ~256 attempts average (00)
-- Difficulty 3: ~4,096 attempts average (000)
-- Difficulty 4: ~65,536 attempts average (0000)
-- Each additional difficulty multiplies work by 16x
-
----
-
-### **4. Blockchain Core (`backend/blockchain/blockchain.py`)**
-
-```python
-class Blockchain:
-    def __init__(self, difficulty=4, mining_reward=50):
-        """
-        The main blockchain data structure
-        
-        Components:
-        - chain: List of all blocks (the blockchain itself)
-        - pending_transactions: Pool of unconfirmed transactions
-        - difficulty: How hard mining is (number of leading zeros)
-        - mining_reward: Incentive for miners (50 G2C per block)
-        """
-        self.chain = [self.create_genesis_block()]
-        self.pending_transactions = []
-        self.difficulty = difficulty
-        self.mining_reward = mining_reward
+frontend/
+  ├─ src/
+  └─ package.json
 ```
 
-**Genesis Block:**
-```python
-def create_genesis_block(self):
-    """
-    The first block in the chain (Block #0)
-    - Has no previous hash (uses '0')
-    - Contains a dummy transaction
-    - Hardcoded and never changes
-    - Foundation of the entire blockchain
-    """
-```
+## How I validated changes
 
-**Transaction Pool:**
-```python
-def add_transaction(self, transaction):
-    """
-    Adds a transaction to the pending pool (mempool)
-    
-    Validation checks:
-    1. Is the signature valid?
-    2. Does sender have sufficient balance?
-    3. Is amount positive?
-    
-    If valid: Add to pool, waiting for miner
-    If invalid: Reject transaction
-    """
-```
+- Ran `python3 backend/test_setup.py` — backend imports and basic transactions succeeded.
+- Built the frontend with `npm run build` to ensure components compile (there is an unrelated ESLint warning in `Wallet.jsx`).
 
-**Mining Process:**
-```python
-def mine_pending_transactions(self, mining_reward_address):
-    """
-    MINING WORKFLOW:
-    
-    1. Take all pending transactions
-    2. Add a mining reward transaction (50 G2C to miner)
-    3. Create new block with these transactions
-    4. Perform proof-of-work (find valid nonce)
-    5. Add block to chain
-    6. Clear pending transactions pool
-    7. Return the new block
-    
-    This is how:
-    - Transactions get confirmed
-    - New coins enter circulation
-    - Miners get incentivized
-    """
-```
+## License
 
-**Balance Calculation:**
-```python
-def get_balance(self, address):
-    """
-    Calculates balance by scanning entire blockchain
-    
-    Process:
-    1. Start with balance = 0
-    2. Loop through every block
-    3. For each transaction:
-       - If you're the sender: balance -= amount
-       - If you're the recipient: balance += amount
-    4. Return final balance
-    
-    Note: No "account" object stores your balance
-    Balance is calculated from transaction history (UTXO model simplified)
-    """
-```
+This repository is for educational purposes. Add a license file if you want to share publicly.
 
-**Chain Validation:**
-```python
-def is_chain_valid(self):
-    """
-    Verifies blockchain integrity
-    
-    Checks:
-    1. Each block's hash matches its calculated hash
-    2. Each block's previous_hash matches the actual previous block
-    3. All transactions in blocks are valid
-    
-    If ANY check fails: Chain is compromised
-    This makes tampering virtually impossible
-    """
-```
+----
 
----
+If you'd like, I can also open a small PR with these README changes, or add CI steps / unit tests next. Let me know which you'd prefer.
 
-### **5. Wallet System (`backend/wallet/wallet.py`)**
-
-```python
-class Wallet:
-    def __init__(self):
-        """
-        Creates a cryptocurrency wallet
-        
-        Components:
-        1. Private Key: Secret key (never share!)
-        2. Public Key: Can be shared (like email address)
-        3. Address: Shortened version of public key (easier to use)
-        
-        Generation process:
-        - Generate random RSA key pair
-        - Hash public key to create shorter address
-        """
-        self.private_key, self.public_key = generate_key_pair()
-        self.address = self.generate_address()
-```
-
-**Address Generation:**
-```python
-def generate_address(self):
-    """
-    Creates a short wallet address from public key
-    
-    Process:
-    1. Take public key (very long string)
-    2. Hash it with SHA-256
-    3. Take first 40 characters
-    4. This becomes the wallet address
-    
-    Example:
-    Public Key: -----BEGIN PUBLIC KEY----- ... (270 chars)
-    Address: f42e8aeeee88ecf5a01a3b2c4d5e6f7a8b9c0d1e (40 chars)
-    ```
-
----
-
-### **6. Flask API Routes (`backend/api/routes.py`)**
-
-**Blockchain Endpoints:**
-
-```python
-@api.route('/blockchain', methods=['GET'])
-def get_blockchain():
-    """
-    Returns complete blockchain data
-    
-    Response includes:
-    - All blocks with their transactions
-    - Current difficulty
-    - Pending transactions
-    - Mining reward amount
-    
-    Used by: Dashboard, Blockchain Viewer
-    """
-
-@api.route('/blockchain/validate', methods=['GET'])
-def validate_blockchain():
-    """
-    Checks if blockchain is valid
-    
-    Returns: {"valid": true/false}
-    
-    Used by: Dashboard to show chain status
-    """
-```
-
-**Wallet Endpoints:**
-
-```python
-@api.route('/wallet/create', methods=['POST'])
-def create_wallet():
-    """
-    Creates a new wallet with keys
-    
-    Process:
-    1. Generate new Wallet object
-    2. Store in server memory (wallets dict)
-    3. Return wallet data to user
-    
-    Response includes:
-    - address
-    - public_key
-    - private_key (WARNING: Save this!)
-    """
-
-@api.route('/wallet/<address>/balance', methods=['GET'])
-def get_balance(address):
-    """
-    Calculates and returns wallet balance
-    
-    Parameters:
-    - address: Wallet address to check
-    
-    Returns: {"address": "...", "balance": 150.5}
-    """
-```
-
-**Transaction Endpoints:**
-
-```python
-@api.route('/transaction/create', methods=['POST'])
-def create_transaction():
-    """
-    Creates and adds a new transaction
-    
-    Request body:
-    {
-        "sender": "public_key_here",
-        "recipient": "address_here",
-        "amount": 25.5,
-        "private_key": "private_key_here"
-    }
-    
-    Process:
-    1. Validate all fields present
-    2. Create Transaction object
-    3. Sign with private key
-    4. Validate signature and balance
-    5. Add to pending pool
-    6. Return confirmation
-    """
-```
-
-**Mining Endpoints:**
-
-```python
-@api.route('/mine', methods=['POST'])
-def mine_block():
-    """
-    Mines all pending transactions
-    
-    Request body:
-    {
-        "miner_address": "address_to_receive_reward"
-    }
-    
-    Process:
-    1. Call blockchain.mine_pending_transactions()
-    2. Proof-of-work algorithm finds valid nonce
-    3. Block added to chain
-    4. Miner receives 50 G2C reward
-    5. Return new block data
-    """
-```
-
----
-
-### **7. Main Application (`backend/main.py`)**
-
-```python
-def create_app():
-    """
-    Application factory pattern
-    
-    Sets up:
-    1. Flask app instance
-    2. CORS (allows frontend on different port to connect)
-    3. Creates blockchain instance
-    4. Registers API routes
-    
-    Returns configured Flask app
-    """
-    app = Flask(__name__)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
-    
-    # Initialize blockchain with settings
-    blockchain = Blockchain(difficulty=4, mining_reward=50)
-    
-    # Connect blockchain to API routes
-    init_routes(blockchain)
-    
-    # Register routes under /api prefix
-    app.register_blueprint(api, url_prefix='/api')
-    
-    return app
-```
-
----
-
-## **FRONTEND ARCHITECTURE**
-
-### **1. API Service Layer (`frontend/src/services/api.js`)**
-
-```javascript
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-```
-
-**Purpose:** Centralizes all HTTP requests to backend
-
-**API Organization:**
-- `blockchainAPI`: Blockchain operations
-- `walletAPI`: Wallet management
-- `transactionAPI`: Transaction creation
-- `miningAPI`: Mining operations
-
-**Example:**
-```javascript
-export const walletAPI = {
-  createWallet: () => api.post('/wallet/create'),
-  getBalance: (address) => api.get(`/wallet/${address}/balance`),
-  getTransactions: (address) => api.get(`/wallet/${address}/transactions`),
-};
-```
-
----
-
-### **2. Main App Component (`frontend/src/App.jsx`)**
-
-```javascript
-function App() {
-  // Global state management
-  const [currentView, setCurrentView] = useState('dashboard');
-  const [wallet, setWallet] = useState(null);  // Persists across navigation
-
-  const renderView = () => {
-    // Renders different components based on navigation
-    switch (currentView) {
-      case 'dashboard': return <Dashboard />;
-      case 'wallet': return <Wallet wallet={wallet} setWallet={setWallet} />;
-      // ... etc
-    }
-  };
-```
-
-**State Management:**
-- `currentView`: Which tab is active (dashboard, wallet, transactions, etc.)
-- `wallet`: Global wallet object shared across components
-
-**Why lift state up?**
-- Wallet persists when navigating between pages
-- Mining and Transactions can access wallet data
-- Prevents losing wallet on navigation
-
----
-
-### **3. Header Component (`frontend/src/components/Header.jsx`)**
-
-```javascript
-function Header({ currentView, setCurrentView }) {
-  return (
-    <header className="header">
-      <div className="header-title">
-        <h1>Group2Coin</h1>
-      </div>
-      
-      <nav className="header-nav">
-        <button
-          className={`nav-button ${currentView === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setCurrentView('dashboard')}
-        >
-          Dashboard
-        </button>
-        // ... more buttons
-      </nav>
-    </header>
-  );
-}
-```
-
-**Features:**
-- Navigation buttons
-- Active state highlighting
-- Responsive layout
-
----
-
-### **4. Dashboard Component (`frontend/src/components/Dashboard.jsx`)**
-
-```javascript
-function Dashboard() {
-  const [stats, setStats] = useState({
-    totalBlocks: 0,
     pendingTransactions: 0,
     difficulty: 0,
     isValid: true,
