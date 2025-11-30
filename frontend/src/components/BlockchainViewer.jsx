@@ -94,7 +94,7 @@ function BlockchainViewer() {
         </div>
         <div className="info-item">
           <span className="info-label">Pending Transactions:</span>
-          <span className="info-value">{blockchain.pending_transactions.length}</span>
+          <span className="info-value">{blockchain.pending_transactions ? blockchain.pending_transactions.length : 0}</span>
         </div>
       </div>
 
@@ -136,21 +136,21 @@ function BlockchainViewer() {
                 <div className="block-field">
                   <label>Transactions ({block.transactions.length}):</label>
                   <div className="transactions-container">
-                    {block.transactions.map((tx, txIndex) => (
+                    {(block.transactions || []).map((tx, txIndex) => (
                       <div key={txIndex} className="transaction-card">
                         <div className="transaction-row">
                           <span className="tx-label">From:</span>
                           <span className="tx-value">
-                            {tx.sender === 'GENESIS' ? 'GENESIS BLOCK' :
-                             tx.sender === 'MINING_REWARD' ? 'MINING REWARD' :
-                             `${tx.sender.substring(0, 30)}...`}
+                            {tx && tx.sender === 'GENESIS' ? 'GENESIS BLOCK' :
+                             tx && tx.sender === 'MINING_REWARD' ? 'MINING REWARD' :
+                             tx && tx.sender ? `${tx.sender.substring(0, 30)}...` : 'Unknown'}
                           </span>
                         </div>
                         <div className="transaction-row">
                           <span className="tx-label">To:</span>
                           <span className="tx-value">
-                            {tx.recipient === 'GENESIS' ? 'GENESIS BLOCK' :
-                             `${tx.recipient.substring(0, 30)}...`}
+                            {tx && tx.recipient === 'GENESIS' ? 'GENESIS BLOCK' :
+                             tx && tx.recipient ? `${tx.recipient.substring(0, 30)}...` : 'Unknown'}
                           </span>
                         </div>
                         <div className="transaction-row">

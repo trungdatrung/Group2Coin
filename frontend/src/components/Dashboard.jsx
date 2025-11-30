@@ -18,6 +18,7 @@ function Dashboard() {
   }, []);
 
   const loadDashboardData = async () => {
+    setLoading(true);
     try {
       const [blockchainRes, pendingRes, difficultyRes, validationRes] = await Promise.all([
         blockchainAPI.getBlockchain(),
@@ -35,7 +36,9 @@ function Dashboard() {
       setLoading(false);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      // keep previous stats but show error state briefly
       setLoading(false);
+      alert('Failed to refresh dashboard data. Is the backend running?');
     }
   };
 
@@ -87,8 +90,8 @@ function Dashboard() {
         </p>
       </div>
 
-      <button className="refresh-button" onClick={loadDashboardData}>
-        Refresh Data
+      <button className="refresh-button" onClick={loadDashboardData} disabled={loading}>
+        {loading ? 'Refreshing...' : 'Refresh Data'}
       </button>
     </div>
   );
