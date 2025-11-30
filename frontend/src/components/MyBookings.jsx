@@ -8,23 +8,29 @@ function MyBookings({ wallet }) {
   const [expandedId, setExpandedId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [error, setError] = useState(null);
   const [showReviewTourId, setShowReviewTourId] = useState(null);
 
   useEffect(() => {
-    if (wallet && wallet.address) {
+    if (wallet?.address) {
       loadUserBookings();
+    } else {
+      setLoading(false);
     }
-  }, [wallet]);
+  }, [wallet?.address]);
 
   const loadUserBookings = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await travelAPI.getUserBookings(wallet.address);
       setBookings(response.data.bookings || []);
     } catch (error) {
       console.error('Error loading bookings:', error);
+      setError(error.message || 'Failed to load bookings');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleCancelBooking = async (bookingId) => {
@@ -59,12 +65,39 @@ function MyBookings({ wallet }) {
     return colors[status] || '#999';
   };
 
-  if (!wallet || !wallet.address) {
+  if (!wallet?.address) {
     return (
       <div className="my-bookings">
         <div className="empty-state">
           <p>Please create or load a wallet first to view your bookings</p>
           <p className="hint">Go to the Wallet tab to get started</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="my-bookings">
+        <div className="bookings-header">
+          <h2>My Bookings</h2>
+          <p className="wallet-info">Account: {wallet.address.substring(0, 30)}...</p>
+        </div>
+        <div className="loading">Loading your bookings...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="my-bookings">
+        <div className="bookings-header">
+          <h2>My Bookings</h2>
+          <p className="wallet-info">Account: {wallet.address.substring(0, 30)}...</p>
+        </div>
+        <div className="error-message">
+          <p>Error: {error}</p>
+          <button className="refresh-btn" onClick={loadUserBookings}>Try Again</button>
         </div>
       </div>
     );

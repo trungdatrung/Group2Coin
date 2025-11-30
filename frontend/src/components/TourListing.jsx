@@ -8,23 +8,26 @@ function TourListing({ wallet }) {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTour, setSelectedTour] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadTours();
-  }, []);
+  }, [wallet]);
 
   const loadTours = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await travelAPI.listTours();
       console.log('Tours API Response:', response.data);
       setTours(response.data.tours || []);
     } catch (error) {
       console.error('Error loading tours:', error);
+      setError(error.message || 'Failed to load tours');
       setTours([]);
-      alert('Failed to load tours: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (loading) {
@@ -35,6 +38,21 @@ function TourListing({ wallet }) {
           <p>Find and book your next adventure</p>
         </div>
         <div className="loading">Loading tours...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="tour-listing">
+        <div className="listing-header">
+          <h2>Explore Tours</h2>
+          <p>Find and book your next adventure</p>
+        </div>
+        <div className="error-message">
+          <p>Error: {error}</p>
+          <button className="refresh-btn" onClick={loadTours}>Try Again</button>
+        </div>
       </div>
     );
   }

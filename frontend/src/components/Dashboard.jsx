@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { blockchainAPI } from '../services/api';
 import './Dashboard.css';
 
@@ -10,16 +10,29 @@ function Dashboard() {
     isValid: true,
   });
   const [loading, setLoading] = useState(true);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    isMountedRef.current = true;
     loadDashboardData();
-    // Only start interval when component mounts
-    const interval = setInterval(loadDashboardData, 5000);
-    // Clear interval when component unmounts
-    return () => clearInterval(interval);
+    
+    // Only start interval when dashboard is mounted and active
+    const interval = setInterval(() => {
+      if (isMountedRef.current) {
+        loadDashboardData();
+      }
+    }, 5000);
+    
+    // Cleanup: Stop interval and mark as unmounted
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const loadDashboardData = async () => {
+    if (!isMountedRef.current) return;
+    
     setLoading(true);
     try {
       const [blockchainRes, pendingRes, difficultyRes, validationRes] = await Promise.all([
@@ -29,18 +42,21 @@ function Dashboard() {
         blockchainAPI.validateBlockchain(),
       ]);
 
-      setStats({
-        totalBlocks: blockchainRes.data.chain.length,
-        pendingTransactions: pendingRes.data.pending_transactions.length,
-        difficulty: difficultyRes.data.difficulty,
-        isValid: validationRes.data.valid,
-      });
-      setLoading(false);
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        setStats({
+          totalBlocks: blockchainRes.data.chain.length,
+          pendingTransactions: pendingRes.data.pending_transactions.length,
+          difficulty: difficultyRes.data.difficulty,
+          isValid: validationRes.data.valid,
+        });
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      // keep previous stats but show error state briefly
-      setLoading(false);
-      alert('Failed to refresh dashboard data. Is the backend running?');
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
