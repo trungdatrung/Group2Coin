@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { travelAPI } from '../services/travel';
+import BookingForm from './BookingForm';
 import './TourListing.css';
 
-function TourListing() {
+function TourListing({ wallet }) {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTour, setSelectedTour] = useState(null);
@@ -65,13 +66,13 @@ function TourListing() {
       </div>
 
       {selectedTour && (
-        <TourDetail tour={selectedTour} onClose={() => setSelectedTour(null)} />
+        <TourDetail tour={selectedTour} wallet={wallet} onClose={() => setSelectedTour(null)} />
       )}
     </div>
   );
 }
 
-function TourDetail({ tour, onClose }) {
+function TourDetail({ tour, wallet, onClose }) {
   const [showBooking, setShowBooking] = useState(false);
 
   return (
@@ -138,7 +139,7 @@ function TourDetail({ tour, onClose }) {
         </div>
 
         {showBooking && (
-          <BookingForm tour={tour} onClose={() => setShowBooking(false)} />
+          <BookingForm tour={tour} wallet={wallet} onClose={() => setShowBooking(false)} />
         )}
       </div>
     </div>
