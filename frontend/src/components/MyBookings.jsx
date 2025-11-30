@@ -59,6 +59,17 @@ function MyBookings({ wallet }) {
     return colors[status] || '#999';
   };
 
+  if (!wallet || !wallet.address) {
+    return (
+      <div className="my-bookings">
+        <div className="empty-state">
+          <p>Please create or load a wallet first to view your bookings</p>
+          <p className="hint">Go to the Wallet tab to get started</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="my-bookings">
       <div className="bookings-header">

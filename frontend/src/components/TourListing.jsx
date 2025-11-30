@@ -17,10 +17,12 @@ function TourListing({ wallet }) {
     try {
       setLoading(true);
       const response = await travelAPI.listTours();
-      setTours(response.data.tours);
+      console.log('Tours API Response:', response.data);
+      setTours(response.data.tours || []);
     } catch (error) {
       console.error('Error loading tours:', error);
-      alert('Failed to load tours');
+      setTours([]);
+      alert('Failed to load tours: ' + (error.message || 'Unknown error'));
     }
     setLoading(false);
   };
@@ -38,6 +40,7 @@ function TourListing({ wallet }) {
       <div className="listing-header">
         <h2>Explore Tours</h2>
         <p>Find and book your next adventure</p>
+        <button className="refresh-btn" onClick={loadTours}>🔄 Refresh</button>
       </div>
 
       <div className="tours-grid">
