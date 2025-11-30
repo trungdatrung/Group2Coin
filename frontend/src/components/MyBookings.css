@@ -1,0 +1,314 @@
+.my-bookings {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.bookings-header {
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 15px;
+}
+
+.bookings-header h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.8em;
+}
+
+.wallet-info {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.filter-btn:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.filter-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.bookings-container {
+  display: grid;
+  gap: 20px;
+}
+
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  color: #666;
+}
+
+.empty-state p:first-child {
+  font-size: 1.2em;
+  margin: 0 0 10px 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.empty-state .hint {
+  margin: 0;
+  font-size: 0.95em;
+}
+
+.booking-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.booking-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.booking-card.pending {
+  border-left: 4px solid #FFA500;
+}
+
+.booking-card.confirmed {
+  border-left: 4px solid #4CAF50;
+}
+
+.booking-card.completed {
+  border-left: 4px solid #2196F3;
+}
+
+.booking-card.cancelled {
+  border-left: 4px solid #f44336;
+}
+
+.booking-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  gap: 15px;
+}
+
+.booking-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-title-section h3 {
+  margin: 0 0 5px 0;
+  color: #333;
+  word-break: break-word;
+}
+
+.booking-location {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.booking-status-badge {
+  padding: 6px 14px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  font-size: 0.85em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.booking-summary {
+  padding: 15px 20px;
+  background: white;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-item {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.summary-item strong {
+  color: #333;
+  display: block;
+  font-size: 0.85em;
+  margin-bottom: 3px;
+}
+
+.expand-button {
+  width: 100%;
+  padding: 12px;
+  background: #f9f9f9;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  cursor: pointer;
+  color: #667eea;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.expand-button:hover {
+  background: #f0f0f0;
+}
+
+.booking-details-expanded {
+  padding: 20px;
+  background: #fafafa;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-section h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1em;
+}
+
+.tour-info,
+.booking-info,
+.tx-info {
+  display: grid;
+  gap: 10px;
+}
+
+.tour-info p,
+.booking-info p,
+.tx-info p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.tour-info strong,
+.booking-info strong,
+.tx-info strong {
+  color: #333;
+}
+
+.price-highlight {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+code {
+  background: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  word-break: break-all;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.itinerary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.itinerary-list li {
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+  border-left: 3px solid #667eea;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.action-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+.cancel-btn {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.cancel-btn:hover {
+  background: #f44336;
+  color: white;
+}
+
+.review-btn {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.review-btn:hover {
+  background: #2196F3;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .my-bookings {
+    padding: 10px;
+  }
+
+  .booking-card-header {
+    flex-direction: column;
+  }
+
+  .booking-status-badge {
+    width: 100%;
+    text-align: center;
+  }
+
+  .booking-summary {
+    grid-template-columns: 1fr;
+  }
+}

@@ -31,6 +31,7 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .nav-button {
@@ -53,4 +54,11 @@
   color: #2c3e50;
   border-color: white;
   font-weight: 600;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 0.5rem;
 }

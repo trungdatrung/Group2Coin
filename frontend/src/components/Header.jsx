@@ -41,6 +41,25 @@ function Header({ currentView, setCurrentView }) {
           >
             Blockchain
           </button>
+          <div className="nav-divider"></div>
+          <button
+            className={`nav-button ${currentView === 'tours' ? 'active' : ''}`}
+            onClick={() => setCurrentView('tours')}
+          >
+            Tours
+          </button>
+          <button
+            className={`nav-button ${currentView === 'my-bookings' ? 'active' : ''}`}
+            onClick={() => setCurrentView('my-bookings')}
+          >
+            My Bookings
+          </button>
+          <button
+            className={`nav-button ${currentView === 'admin-tours' ? 'active' : ''}`}
+            onClick={() => setCurrentView('admin-tours')}
+          >
+            Admin Panel
+          </button>
         </nav>
       </div>
     </header>
