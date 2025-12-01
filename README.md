@@ -10,6 +10,30 @@ Group2Coin is a full-stack educational blockchain application with an integrated
 
 ---
 
+## Clone the Repository
+
+To get a local copy of this project, use one of the following methods:
+
+### Using HTTPS
+```bash
+git clone https://github.com/trungdatrung/Group2Coin.git
+cd Group2Coin
+```
+
+### Using SSH (requires SSH key setup)
+```bash
+git clone git@github.com:trungdatrung/Group2Coin.git
+cd Group2Coin
+```
+
+### Using GitHub CLI
+```bash
+gh repo clone trungdatrung/Group2Coin
+cd Group2Coin
+```
+
+---
+
 ## Quick Start (Development)
 
 **Requirements:**
