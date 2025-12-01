@@ -5,6 +5,7 @@ import Wallet from './components/Wallet';
 import Transactions from './components/Transactions';
 import Mining from './components/Mining';
 import BlockchainViewer from './components/BlockchainViewer';
+import SupplyChain from './components/SupplyChain';
 import './components/App.css';
 
 function App() {
@@ -23,6 +24,8 @@ function App() {
         return <Mining wallet={wallet} />;
       case 'blockchain':
         return <BlockchainViewer />;
+      case 'supplychain':
+        return <SupplyChain />;
       default:
         return <Dashboard />;
     }

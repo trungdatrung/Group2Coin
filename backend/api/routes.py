@@ -5,13 +5,18 @@ from datetime import datetime
 
 api = Blueprint('api', __name__)
 
-# Global variables to store blockchain and wallets
+# Global variables to store blockchain, wallets, and supply chain manager
 blockchain = None
 wallets = {}
+supply_chain_manager = None
 
 def init_routes(bc):
-    global blockchain
+    global blockchain, supply_chain_manager
     blockchain = bc
+    
+    # Initialize supply chain manager
+    from blockchain.product import SupplyChainManager
+    supply_chain_manager = SupplyChainManager()
 
 # ============================================
 # BLOCKCHAIN ROUTES
@@ -450,5 +455,231 @@ def get_reward():
     """Get mining reward"""
     try:
         return jsonify({'reward': blockchain.mining_reward}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================
+# SUPPLY CHAIN ROUTES
+# ============================================
+
+@api.route('/supplychain/product/register', methods=['POST'])
+def register_product():
+    """
+    Register a new product in the supply chain system.
+    This creates an immutable record of the product's origin.
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['product_id', 'name', 'category', 'manufacturer', 
+                         'manufacture_date', 'batch_number', 'initial_location']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Register the product
+        product = supply_chain_manager.register_product(
+            product_id=data['product_id'],
+            name=data['name'],
+            category=data['category'],
+            manufacturer=data['manufacturer'],
+            manufacture_date=data['manufacture_date'],
+            batch_number=data['batch_number'],
+            initial_location=data['initial_location'],
+            metadata=data.get('metadata', {})
+        )
+        
+        return jsonify({
+            'message': 'Product registered successfully',
+            'product': product.to_dict()
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/product/<product_id>/event', methods=['POST'])
+def add_product_event(product_id):
+    """
+    Add a tracking event to a product's supply chain history.
+    Each event represents a movement or status change in the supply chain.
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['event_type', 'location', 'handler', 'description']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Add event to product
+        event = supply_chain_manager.add_event_to_product(
+            product_id=product_id,
+            event_type=data['event_type'],
+            location=data['location'],
+            handler=data['handler'],
+            description=data['description'],
+            metadata=data.get('metadata', {})
+        )
+        
+        return jsonify({
+            'message': 'Event added successfully',
+            'event': event.to_dict()
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/product/<product_id>', methods=['GET'])
+def get_product(product_id):
+    """
+    Retrieve complete product information including full tracking history.
+    """
+    try:
+        product = supply_chain_manager.get_product(product_id)
+        
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        return jsonify({
+            'product': product.to_dict()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/product/<product_id>/verify', methods=['POST'])
+def verify_product(product_id):
+    """
+    Verify product authenticity using its unique hash.
+    This helps prevent counterfeiting by confirming product legitimacy.
+    """
+    try:
+        data = request.get_json()
+        claimed_hash = data.get('product_hash')
+        
+        if not claimed_hash:
+            return jsonify({'error': 'Product hash required'}), 400
+        
+        is_authentic = supply_chain_manager.verify_product_authenticity(
+            product_id, 
+            claimed_hash
+        )
+        
+        product = supply_chain_manager.get_product(product_id)
+        
+        return jsonify({
+            'authentic': is_authentic,
+            'product_id': product_id,
+            'actual_hash': product.product_hash if product else None,
+            'message': 'Product is authentic' if is_authentic else 'Product verification failed'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/products', methods=['GET'])
+def get_all_products():
+    """
+    Get all registered products in the supply chain.
+    Supports filtering by category and manufacturer.
+    """
+    try:
+        category = request.args.get('category')
+        manufacturer = request.args.get('manufacturer')
+        
+        if category:
+            products = supply_chain_manager.get_products_by_category(category)
+        elif manufacturer:
+            products = supply_chain_manager.get_products_by_manufacturer(manufacturer)
+        else:
+            products = supply_chain_manager.get_all_products()
+        
+        return jsonify({
+            'products': [p.to_dict() for p in products],
+            'count': len(products)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/products/alerts', methods=['GET'])
+def get_products_with_alerts():
+    """
+    Get all products that have safety or quality alerts.
+    Critical for food safety and pharmaceutical monitoring.
+    """
+    try:
+        products = supply_chain_manager.get_products_with_alerts()
+        
+        return jsonify({
+            'products': [p.to_dict() for p in products],
+            'count': len(products),
+            'alert_summary': [
+                {
+                    'product_id': p.product_id,
+                    'product_name': p.name,
+                    'alerts': p.check_safety_alerts()
+                } for p in products
+            ]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/categories', methods=['GET'])
+def get_categories():
+    """
+    Get list of all product categories in the system.
+    """
+    try:
+        products = supply_chain_manager.get_all_products()
+        categories = list(set(p.category for p in products))
+        
+        category_counts = {}
+        for cat in categories:
+            category_counts[cat] = len(supply_chain_manager.get_products_by_category(cat))
+        
+        return jsonify({
+            'categories': categories,
+            'category_counts': category_counts
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/manufacturers', methods=['GET'])
+def get_manufacturers():
+    """
+    Get list of all manufacturers in the system.
+    """
+    try:
+        products = supply_chain_manager.get_all_products()
+        manufacturers = list(set(p.manufacturer for p in products))
+        
+        manufacturer_counts = {}
+        for mfr in manufacturers:
+            manufacturer_counts[mfr] = len(supply_chain_manager.get_products_by_manufacturer(mfr))
+        
+        return jsonify({
+            'manufacturers': manufacturers,
+            'manufacturer_counts': manufacturer_counts
+        }), 200
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 500

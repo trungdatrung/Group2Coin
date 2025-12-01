@@ -78,4 +78,57 @@ export const miningAPI = {
   getReward: () => api.get('/blockchain/reward'),
 };
 
+export const supplyChainAPI = {
+  // Register a new product in the supply chain
+  registerProduct: (productData) => {
+    return api.post('/supplychain/product/register', productData);
+  },
+  
+  // Add a tracking event to a product
+  addProductEvent: (productId, eventData) => {
+    return api.post(`/supplychain/product/${productId}/event`, eventData);
+  },
+  
+  // Get detailed information about a specific product
+  getProduct: (productId) => {
+    return api.get(`/supplychain/product/${productId}`);
+  },
+  
+  // Verify product authenticity using its hash
+  verifyProduct: (productId, productHash) => {
+    return api.post(`/supplychain/product/${productId}/verify`, {
+      product_hash: productHash
+    });
+  },
+  
+  // Get all products with optional filtering
+  getAllProducts: (category = null, manufacturer = null) => {
+    let url = '/supplychain/products';
+    const params = new URLSearchParams();
+    
+    if (category) params.append('category', category);
+    if (manufacturer) params.append('manufacturer', manufacturer);
+    
+    const queryString = params.toString();
+    if (queryString) url += `?${queryString}`;
+    
+    return api.get(url);
+  },
+  
+  // Get products that have safety or quality alerts
+  getProductsWithAlerts: () => {
+    return api.get('/supplychain/products/alerts');
+  },
+  
+  // Get list of all product categories
+  getCategories: () => {
+    return api.get('/supplychain/categories');
+  },
+  
+  // Get list of all manufacturers
+  getManufacturers: () => {
+    return api.get('/supplychain/manufacturers');
+  }
+};
+
 export default api;
