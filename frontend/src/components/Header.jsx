@@ -47,6 +47,12 @@ function Header({ currentView, setCurrentView }) {
           >
             Supply Chain
           </button>
+          <button
+            className={`nav-button ${currentView === 'smartcontract' ? 'active' : ''}`}
+            onClick={() => setCurrentView('smartcontract')}
+          >
+            Smart Contract
+          </button>
         </nav>
       </div>
     </header>

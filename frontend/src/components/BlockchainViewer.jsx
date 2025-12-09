@@ -137,26 +137,63 @@ function BlockchainViewer() {
                   <label>Transactions ({block.transactions.length}):</label>
                   <div className="transactions-container">
                     {(block.transactions || []).map((tx, txIndex) => (
-                      <div key={txIndex} className="transaction-card">
-                        <div className="transaction-row">
-                          <span className="tx-label">From:</span>
-                          <span className="tx-value">
-                            {tx && tx.sender === 'GENESIS' ? 'GENESIS BLOCK' :
-                             tx && tx.sender === 'MINING_REWARD' ? 'MINING REWARD' :
-                             tx && tx.sender ? `${tx.sender.substring(0, 30)}...` : 'Unknown'}
-                          </span>
-                        </div>
-                        <div className="transaction-row">
-                          <span className="tx-label">To:</span>
-                          <span className="tx-value">
-                            {tx && tx.recipient === 'GENESIS' ? 'GENESIS BLOCK' :
-                             tx && tx.recipient ? `${tx.recipient.substring(0, 30)}...` : 'Unknown'}
-                          </span>
-                        </div>
-                        <div className="transaction-row">
-                          <span className="tx-label">Amount:</span>
-                          <span className="tx-amount">{tx.amount} G2C</span>
-                        </div>
+                      <div key={txIndex} className={`transaction-card ${tx.transaction_type === 'supply_chain' ? 'supply-chain-tx' : ''}`}>
+                        {tx.transaction_type === 'supply_chain' ? (
+                          // Supply Chain Transaction
+                          <>
+                            <div className="transaction-row">
+                              <span className="tx-label">Type:</span>
+                              <span className="tx-value supply-chain-badge">
+                                SUPPLY CHAIN: {tx.event_type?.toUpperCase().replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="transaction-row">
+                              <span className="tx-label">Product ID:</span>
+                              <span className="tx-value">{tx.product_data?.product_id || 'Unknown'}</span>
+                            </div>
+                            {tx.product_data?.name && (
+                              <div className="transaction-row">
+                                <span className="tx-label">Product:</span>
+                                <span className="tx-value">{tx.product_data.name}</span>
+                              </div>
+                            )}
+                            {tx.product_data?.location && (
+                              <div className="transaction-row">
+                                <span className="tx-label">Location:</span>
+                                <span className="tx-value">{tx.product_data.location}</span>
+                              </div>
+                            )}
+                            {tx.product_data?.event_type && (
+                              <div className="transaction-row">
+                                <span className="tx-label">Event:</span>
+                                <span className="tx-value">{tx.product_data.event_type.replace('_', ' ')}</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          // Regular Cryptocurrency Transaction
+                          <>
+                            <div className="transaction-row">
+                              <span className="tx-label">From:</span>
+                              <span className="tx-value">
+                                {tx && tx.sender === 'GENESIS' ? 'GENESIS BLOCK' :
+                                 tx && tx.sender === 'MINING_REWARD' ? 'MINING REWARD' :
+                                 tx && tx.sender ? `${tx.sender.substring(0, 30)}...` : 'Unknown'}
+                              </span>
+                            </div>
+                            <div className="transaction-row">
+                              <span className="tx-label">To:</span>
+                              <span className="tx-value">
+                                {tx && tx.recipient === 'GENESIS' ? 'GENESIS BLOCK' :
+                                 tx && tx.recipient ? `${tx.recipient.substring(0, 30)}...` : 'Unknown'}
+                              </span>
+                            </div>
+                            <div className="transaction-row">
+                              <span className="tx-label">Amount:</span>
+                              <span className="tx-amount">{tx.amount} G2C</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

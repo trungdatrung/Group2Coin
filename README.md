@@ -1,6 +1,6 @@
 # Group2Coin Blockchain Platform
 
-Full-stack blockchain application with cryptocurrency and supply chain management capabilities.
+Full-stack blockchain application with cryptocurrency, supply chain management, and smart contract capabilities.
 
 ## Quick Start
 
@@ -37,6 +37,17 @@ App runs on http://localhost:3000
 - Authenticity verification to prevent counterfeiting
 - Safety monitoring with quality alerts
 - Category and manufacturer filtering
+- **Blockchain integration: All events recorded as transactions**
+- **Immutable audit trail with cryptographic verification**
+
+### Smart Contracts (NEW)
+- **Escrow Contracts**: Multi-party approval system for secure transactions
+- **Time-Lock Contracts**: Scheduled automatic fund releases
+- **Conditional Contracts**: Execute when balance or block height thresholds met
+- **Recurring Contracts**: Automated periodic payments
+- Contract lifecycle management (create, approve, execute)
+- Auto-execution system checks and executes ready contracts
+- Complete contract history and status tracking
 
 ## Technology Stack
 
@@ -47,14 +58,14 @@ App runs on http://localhost:3000
 
 ```
 backend/
-  blockchain/     - Core blockchain logic (blocks, transactions, proof-of-work)
+  blockchain/     - Core blockchain logic (blocks, transactions, proof-of-work, smart contracts)
   wallet/         - RSA wallet generation
   utils/          - Cryptographic functions (SHA-256, RSA signing)
   api/            - REST API endpoints
   main.py         - Flask application
 
 frontend/
-  components/     - React UI components
+  components/     - React UI components (Dashboard, Wallet, Mining, Blockchain, Supply Chain, Smart Contracts)
   services/       - API client
   App.jsx         - Main application
 ```
@@ -75,6 +86,9 @@ Iterates through blockchain to sum received and subtract sent transactions for a
 
 ### 5. Blockchain Validation
 Verifies hash integrity, chain linkage, proof-of-work, and transaction validity for entire chain.
+
+### 6. Smart Contract Execution
+Automated condition checking and execution system. Supports time-based, approval-based, and threshold-based triggers.
 
 ## API Endpoints
 
@@ -99,6 +113,16 @@ Verifies hash integrity, chain linkage, proof-of-work, and transaction validity 
 - POST /api/supplychain/product/:id/event - Add tracking event
 - GET /api/supplychain/product/:id - Get product details
 - POST /api/supplychain/product/:id/verify - Verify authenticity
+
+### Smart Contracts
+- POST /api/contracts/create - Create new smart contract
+- GET /api/contracts/:id - Get contract details
+- GET /api/contracts - List all contracts (filter by participant)
+- GET /api/contracts/pending - Get pending contracts
+- POST /api/contracts/:id/approve - Approve escrow contract
+- POST /api/contracts/:id/execute - Execute contract manually
+- POST /api/contracts/check-execute - Auto-execute all ready contracts
+- GET /api/contracts/:id/check - Check if conditions met
 
 ## Security Features
 

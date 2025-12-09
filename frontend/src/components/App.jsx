@@ -8,10 +8,8 @@ import Wallet from './components/Wallet';
 import Transactions from './components/Transactions';
 import Mining from './components/Mining';
 import BlockchainViewer from './components/BlockchainViewer';
-import TourListing from './components/TourListing';
-import MyBookings from './components/MyBookings';
-import TourManagement from './components/TourManagement';
-import ErrorBoundary from './components/ErrorBoundary';
+import SupplyChain from './components/SupplyChain';
+import SmartContract from './components/SmartContract';
 import './App.css';
 
 function App() {
@@ -30,24 +28,10 @@ function App() {
         return <Mining key="mining" wallet={wallet} />;
       case 'blockchain':
         return <BlockchainViewer key="blockchain" />;
-      case 'tours':
-        return (
-          <ErrorBoundary key="tours">
-            <TourListing wallet={wallet} />
-          </ErrorBoundary>
-        );
-      case 'my-bookings':
-        return (
-          <ErrorBoundary key="my-bookings">
-            <MyBookings wallet={wallet} />
-          </ErrorBoundary>
-        );
-      case 'admin-tours':
-        return (
-          <ErrorBoundary key="admin-tours">
-            <TourManagement wallet={wallet} />
-          </ErrorBoundary>
-        );
+      case 'supplychain':
+        return <SupplyChain key="supplychain" />;
+      case 'smartcontract':
+        return <SmartContract key="smartcontract" wallet={wallet} />;
       default:
         return <Dashboard key="dashboard" />;
     }

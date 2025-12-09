@@ -193,6 +193,21 @@
   border-left: 3px solid #3498db;
 }
 
+.transaction-card.supply-chain-tx {
+  background: #f0f9ff;
+  border-left: 3px solid #0ea5e9;
+}
+
+.supply-chain-badge {
+  background: #0ea5e9;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
 .transaction-row {
   display: grid;
   grid-template-columns: 120px 1fr;

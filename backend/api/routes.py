@@ -5,18 +5,23 @@ from datetime import datetime
 
 api = Blueprint('api', __name__)
 
-# Global variables to store blockchain, wallets, and supply chain manager
+# Global variables to store blockchain, wallets, supply chain manager, and smart contract manager
 blockchain = None
 wallets = {}
 supply_chain_manager = None
+smart_contract_manager = None
 
 def init_routes(bc):
-    global blockchain, supply_chain_manager
+    global blockchain, supply_chain_manager, smart_contract_manager
     blockchain = bc
     
     # Initialize supply chain manager
     from blockchain.product import SupplyChainManager
     supply_chain_manager = SupplyChainManager()
+    
+    # Initialize smart contract manager
+    from blockchain.smart_contract import SmartContractManager
+    smart_contract_manager = SmartContractManager()
 
 # ============================================
 # BLOCKCHAIN ROUTES
@@ -492,9 +497,15 @@ def register_product():
             metadata=data.get('metadata', {})
         )
         
+        # Create blockchain transaction for product registration
+        from blockchain.supply_chain_transaction import SupplyChainTransaction
+        sc_transaction = SupplyChainTransaction.create_product_registration(product)
+        blockchain.add_transaction(sc_transaction)
+        
         return jsonify({
-            'message': 'Product registered successfully',
-            'product': product.to_dict()
+            'message': 'Product registered successfully and recorded on blockchain',
+            'product': product.to_dict(),
+            'blockchain_pending': True
         }), 201
         
     except ValueError as e:
@@ -508,6 +519,7 @@ def add_product_event(product_id):
     """
     Add a tracking event to a product's supply chain history.
     Each event represents a movement or status change in the supply chain.
+    Records the event as a transaction on the blockchain.
     """
     try:
         data = request.get_json()
@@ -529,9 +541,15 @@ def add_product_event(product_id):
             metadata=data.get('metadata', {})
         )
         
+        # Create blockchain transaction for the event
+        from blockchain.supply_chain_transaction import SupplyChainTransaction
+        sc_transaction = SupplyChainTransaction.create_tracking_event(product_id, event)
+        blockchain.add_transaction(sc_transaction)
+        
         return jsonify({
-            'message': 'Event added successfully',
-            'event': event.to_dict()
+            'message': 'Event added successfully and recorded on blockchain',
+            'event': event.to_dict(),
+            'blockchain_pending': True
         }), 201
         
     except ValueError as e:
@@ -679,6 +697,224 @@ def get_manufacturers():
         return jsonify({
             'manufacturers': manufacturers,
             'manufacturer_counts': manufacturer_counts
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/supplychain/products/clear', methods=['DELETE'])
+def clear_all_supply_chain_data():
+    """
+    Clear all supply chain data from the system.
+    This removes all registered products and their events.
+    Use with caution - this action cannot be undone.
+    """
+    global supply_chain_manager
+    
+    try:
+        # Get count before clearing
+        product_count = len(supply_chain_manager.get_all_products())
+        
+        # Clear all products by reinitializing the manager
+        from blockchain.product import SupplyChainManager
+        supply_chain_manager = SupplyChainManager()
+        
+        return jsonify({
+            'message': 'All supply chain data cleared successfully',
+            'products_removed': product_count
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================
+# SMART CONTRACT ROUTES
+# ============================================
+
+@api.route('/contracts/create', methods=['POST'])
+def create_smart_contract():
+    """
+    Create a new smart contract.
+    Supports escrow, time-lock, conditional, and recurring contracts.
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['contract_id', 'creator', 'contract_type', 'participants', 'amount', 'conditions']
+        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Create the smart contract
+        contract = smart_contract_manager.create_contract(
+            contract_id=data['contract_id'],
+            creator=data['creator'],
+            contract_type=data['contract_type'],
+            participants=data['participants'],
+            amount=float(data['amount']),
+            conditions=data['conditions'],
+            metadata=data.get('metadata', {})
+        )
+        
+        return jsonify({
+            'message': 'Smart contract created successfully',
+            'contract': contract.to_dict()
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/<contract_id>', methods=['GET'])
+def get_smart_contract(contract_id):
+    """
+    Retrieve details of a specific smart contract.
+    """
+    try:
+        contract = smart_contract_manager.get_contract(contract_id)
+        
+        if not contract:
+            return jsonify({'error': 'Contract not found'}), 404
+        
+        return jsonify({
+            'contract': contract.to_dict()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts', methods=['GET'])
+def get_all_contracts():
+    """
+    Get all smart contracts or filter by participant address.
+    """
+    try:
+        address = request.args.get('address')
+        
+        if address:
+            contracts = smart_contract_manager.get_contracts_by_participant(address)
+        else:
+            contracts = list(smart_contract_manager.contracts.values())
+        
+        return jsonify({
+            'contracts': [c.to_dict() for c in contracts],
+            'count': len(contracts)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/pending', methods=['GET'])
+def get_pending_contracts():
+    """
+    Get all contracts that are pending execution.
+    """
+    try:
+        contracts = smart_contract_manager.get_pending_contracts()
+        
+        return jsonify({
+            'contracts': [c.to_dict() for c in contracts],
+            'count': len(contracts)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/<contract_id>/approve', methods=['POST'])
+def approve_contract(contract_id):
+    """
+    Approve an escrow contract.
+    Requires approver address in request body.
+    """
+    try:
+        data = request.get_json()
+        
+        if 'approver' not in data:
+            return jsonify({'error': 'Missing approver address'}), 400
+        
+        success = smart_contract_manager.add_approval(contract_id, data['approver'])
+        
+        if not success:
+            return jsonify({'error': 'Failed to add approval. Check contract type and participant.'}), 400
+        
+        contract = smart_contract_manager.get_contract(contract_id)
+        
+        return jsonify({
+            'message': 'Approval added successfully',
+            'contract': contract.to_dict()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/<contract_id>/execute', methods=['POST'])
+def execute_contract(contract_id):
+    """
+    Manually trigger contract execution (if conditions are met).
+    """
+    try:
+        contract = smart_contract_manager.get_contract(contract_id)
+        
+        if not contract:
+            return jsonify({'error': 'Contract not found'}), 404
+        
+        result = contract.execute(blockchain)
+        
+        return jsonify({
+            'execution_result': result,
+            'contract': contract.to_dict()
+        }), 200 if result['success'] else 400
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/check-execute', methods=['POST'])
+def check_and_execute_contracts():
+    """
+    Check all pending contracts and execute those with met conditions.
+    This can be called periodically or after mining.
+    """
+    try:
+        results = smart_contract_manager.check_and_execute_contracts(blockchain)
+        
+        return jsonify({
+            'message': f'Checked contracts, executed {len(results)}',
+            'executions': results
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@api.route('/contracts/<contract_id>/check', methods=['GET'])
+def check_contract_conditions(contract_id):
+    """
+    Check if a contract's conditions are currently met.
+    """
+    try:
+        contract = smart_contract_manager.get_contract(contract_id)
+        
+        if not contract:
+            return jsonify({'error': 'Contract not found'}), 404
+        
+        conditions_met = contract.check_conditions(blockchain)
+        
+        return jsonify({
+            'contract_id': contract_id,
+            'conditions_met': conditions_met,
+            'status': contract.status,
+            'contract': contract.to_dict()
         }), 200
         
     except Exception as e:

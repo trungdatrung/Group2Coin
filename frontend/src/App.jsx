@@ -6,6 +6,7 @@ import Transactions from './components/Transactions';
 import Mining from './components/Mining';
 import BlockchainViewer from './components/BlockchainViewer';
 import SupplyChain from './components/SupplyChain';
+import SmartContract from './components/SmartContract';
 import './components/App.css';
 
 function App() {
@@ -26,6 +27,8 @@ function App() {
         return <BlockchainViewer />;
       case 'supplychain':
         return <SupplyChain />;
+      case 'smartcontract':
+        return <SmartContract wallet={wallet} />;
       default:
         return <Dashboard />;
     }

@@ -1,11 +1,11 @@
 .mining {
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
 .mining-title {
-  font-size: 1.8rem;
+  font-size: 2rem;
   color: #2c3e50;
   margin-bottom: 2rem;
   font-weight: 600;
@@ -13,14 +13,14 @@
 
 .mining-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .stat-card-mining {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e1e8ed;
@@ -28,28 +28,28 @@
 }
 
 .stat-label-mining {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #7f8c8d;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 500;
 }
 
 .stat-value-mining {
-  font-size: 2.5rem;
+  font-size: 3rem;
   color: #2c3e50;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
 .stat-description-mining {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #95a5a6;
 }
 
 .mining-section,
 .difficulty-section {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 1px solid #e1e8ed;
@@ -58,7 +58,7 @@
 
 .mining-section h3,
 .difficulty-section h3 {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: #2c3e50;
   margin-bottom: 1.5rem;
   font-weight: 600;
@@ -66,9 +66,10 @@
 
 .mining-form,
 .difficulty-form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 1.5rem;
+  align-items: end;
 }
 
 .form-group-mining {
@@ -80,14 +81,14 @@
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 .form-group-mining input {
-  padding: 0.8rem;
+  padding: 1rem;
   border: 1px solid #e1e8ed;
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   background: #f8f9fa;
   transition: border-color 0.3s ease;
 }
@@ -105,12 +106,14 @@
 
 .mine-button,
 .difficulty-button {
-  padding: 1rem;
+  padding: 1rem 2.5rem;
   border: none;
   border-radius: 6px;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 600;
   transition: all 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .mine-button {
@@ -120,6 +123,8 @@
 
 .mine-button:hover:not(:disabled) {
   background: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
 }
 
 .mine-button:disabled {
@@ -134,23 +139,26 @@
 
 .difficulty-button:hover {
   background: #8e44ad;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
 }
 
 .mining-progress {
   text-align: center;
-  padding: 2rem;
+  padding: 3rem;
   background: #f8f9fa;
   border-radius: 6px;
+  margin-top: 2rem;
 }
 
 .progress-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e1e8ed;
+  width: 60px;
+  height: 60px;
+  border: 5px solid #e1e8ed;
   border-top-color: #f39c12;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
 }
 
 @keyframes spin {
@@ -161,19 +169,20 @@
   color: #2c3e50;
   font-weight: 600;
   margin: 0.5rem 0;
+  font-size: 1.1rem;
 }
 
 .progress-note {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #7f8c8d;
   font-style: italic;
 }
 
 .result-box-mining {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
-  border-radius: 6px;
-  border-left: 4px solid;
+  margin-top: 2rem;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 5px solid;
 }
 
 .result-box-mining.success {
@@ -187,8 +196,8 @@
 }
 
 .result-box-mining h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  font-size: 1.4rem;
 }
 
 .result-box-mining.success h3 {
@@ -200,34 +209,54 @@
 }
 
 .result-box-mining p {
-  margin: 0.5rem 0;
+  margin: 0.75rem 0;
   color: #2c3e50;
+  font-size: 1rem;
 }
 
 .mining-result-details {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .reward-note {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   font-weight: 600;
   color: #27ae60;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
 }
 
 .warning-banner {
   background: #fff3cd;
   border: 1px solid #ffc107;
   border-radius: 6px;
-  padding: 1rem;
+  padding: 1.25rem;
   color: #856404;
   margin-bottom: 2rem;
   line-height: 1.6;
+  font-size: 0.95rem;
 }
 
 .warning-banner strong {
   display: inline;
   margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+  .mining-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .mining-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .mining-form,
+  .difficulty-form {
+    grid-template-columns: 1fr;
+  }
 }

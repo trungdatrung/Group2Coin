@@ -100,7 +100,7 @@ function Transactions({ wallet }) {
 
       <div className="transaction-form-container">
         <form className="transaction-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="form-group full-width">
             <label htmlFor="senderPublicKey">Your Public Key</label>
             <textarea
               id="senderPublicKey"
@@ -113,7 +113,7 @@ function Transactions({ wallet }) {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group full-width">
             <label htmlFor="senderPrivateKey">Your Private Key</label>
             <textarea
               id="senderPrivateKey"

@@ -12,6 +12,7 @@ export const blockchainAPI = {
   validateBlockchain: () => api.get('/blockchain/validate'),
   getPendingTransactions: () => api.get('/blockchain/pending'),
   getDifficulty: () => api.get('/blockchain/difficulty'),
+  setDifficulty: (difficulty) => api.post('/blockchain/difficulty', { difficulty }),
 };
 
 export const walletAPI = {
@@ -128,6 +129,11 @@ export const supplyChainAPI = {
   // Get list of all manufacturers
   getManufacturers: () => {
     return api.get('/supplychain/manufacturers');
+  },
+  
+  // Clear all supply chain data
+  clearAllData: () => {
+    return api.delete('/supplychain/products/clear');
   }
 };
 

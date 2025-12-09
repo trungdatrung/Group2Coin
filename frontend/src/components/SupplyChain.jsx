@@ -37,6 +37,7 @@ function SupplyChain() {
     manufacture_date: '',
     batch_number: '',
     initial_location: '',
+    quantity: '',
     description: '',
     specifications: ''
   });
@@ -132,6 +133,41 @@ function SupplyChain() {
   };
 
   /**
+   * Clear all supply chain data
+   */
+  const clearAllData = async () => {
+    if (!window.confirm('Are you sure you want to clear ALL supply chain data? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Clear all products from the system
+      const response = await supplyChainAPI.clearAllData();
+      
+      alert('All supply chain data has been cleared successfully');
+      
+      // Reset all state
+      setProducts([]);
+      setFilteredProducts([]);
+      setCategories([]);
+      setManufacturers([]);
+      setAlertProducts([]);
+      setSelectedProduct(null);
+      setProductDetails(null);
+      setSelectedCategory('');
+      setSelectedManufacturer('');
+      
+    } catch (err) {
+      setError('Failed to clear data: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
    * Filter products based on selected category and manufacturer
    */
   const filterProducts = () => {
@@ -163,6 +199,11 @@ function SupplyChain() {
         description: registerForm.description,
         specifications: registerForm.specifications
       };
+      
+      // Add quantity to metadata if provided
+      if (registerForm.quantity) {
+        metadata.quantity = registerForm.quantity;
+      }
 
       // Create product registration payload
       const productData = {
@@ -178,7 +219,7 @@ function SupplyChain() {
 
       const response = await supplyChainAPI.registerProduct(productData);
       
-      alert('Product registered successfully!');
+      alert('Product registered successfully and recorded on blockchain! Mine a block to permanently store this registration.');
       
       // Reset form and reload products
       setRegisterForm({
@@ -189,6 +230,7 @@ function SupplyChain() {
         manufacture_date: '',
         batch_number: '',
         initial_location: '',
+        quantity: '',
         description: '',
         specifications: ''
       });
@@ -260,7 +302,7 @@ function SupplyChain() {
 
       await supplyChainAPI.addProductEvent(selectedProduct, eventData);
       
-      alert('Event added successfully!');
+      alert('Event added successfully and recorded on blockchain! Mine a block to permanently store this event.');
       
       // Reset form and reload product details
       setEventForm({
@@ -335,6 +377,14 @@ function SupplyChain() {
         </div>
       )}
 
+      {/* Blockchain Integration Info */}
+      <div className="blockchain-info-banner">
+        <div className="info-icon">ℹ</div>
+        <div className="info-content">
+          <strong>Blockchain Integration:</strong> All product registrations and tracking events are recorded as transactions on the blockchain, ensuring immutability and transparency. Visit the Blockchain tab to see supply chain transactions. Mine blocks to permanently store pending transactions.
+        </div>
+      </div>
+
       {/* Action Buttons */}
       <div className="action-bar">
         <button 
@@ -375,11 +425,24 @@ function SupplyChain() {
         </button>
 
         <button 
-          onClick={loadProducts}
+          onClick={() => {
+            loadProducts();
+            loadCategories();
+            loadManufacturers();
+            loadAlerts();
+          }}
           className="btn-refresh"
           disabled={loading}
         >
-          Refresh Data
+          {loading ? 'Refreshing...' : 'Refresh Data'}
+        </button>
+
+        <button 
+          onClick={clearAllData}
+          className="btn-danger"
+          disabled={loading}
+        >
+          Clear All Data
         </button>
       </div>
 
@@ -475,6 +538,17 @@ function SupplyChain() {
                 onChange={(e) => setRegisterForm({...registerForm, initial_location: e.target.value})}
                 placeholder="Origin location (city, country)"
                 required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Quantity</label>
+              <input
+                type="number"
+                value={registerForm.quantity}
+                onChange={(e) => setRegisterForm({...registerForm, quantity: e.target.value})}
+                placeholder="Product quantity or units"
+                min="0"
               />
             </div>
 
@@ -827,6 +901,9 @@ function SupplyChain() {
               {productDetails.metadata && (
                 <div className="metadata-section">
                   <h4>Additional Information</h4>
+                  {productDetails.metadata.quantity && (
+                    <p><strong>Quantity:</strong> {productDetails.metadata.quantity}</p>
+                  )}
                   {productDetails.metadata.description && (
                     <p><strong>Description:</strong> {productDetails.metadata.description}</p>
                   )}
