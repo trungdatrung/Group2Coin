@@ -5,8 +5,6 @@ from flask import Flask
 from flask_cors import CORS
 from blockchain.blockchain import Blockchain
 from api.routes import api, init_routes
-from travel.routes import travel_api, init_travel_routes
-from travel.manager import TravelManager
 
 
 def create_app():
@@ -17,16 +15,13 @@ def create_app():
     """
     app = Flask(__name__)
     
-    CORS(app, resources={r"/api/*": {"origins": "*"}, r"/travel/*": {"origins": "*"}})
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
     
     blockchain = Blockchain(difficulty=4, mining_reward=50)
-    travel_manager = TravelManager()
     
     init_routes(blockchain)
-    init_travel_routes(travel_manager)
     
     app.register_blueprint(api, url_prefix='/api')
-    app.register_blueprint(travel_api, url_prefix='/travel')
     
     return app
 
