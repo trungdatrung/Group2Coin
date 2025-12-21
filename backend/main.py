@@ -3,7 +3,7 @@ Main Flask application entry point for Group2Coin blockchain
 """
 from flask import Flask
 from flask_cors import CORS
-from blockchain.blockchain import Blockchain
+from services.node_service import NodeService
 from api.routes import api, init_routes
 
 
@@ -17,9 +17,10 @@ def create_app():
     
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     
-    blockchain = Blockchain(difficulty=4, mining_reward=50)
+    # Initialize Node Service (Singleton for the application)
+    node_service = NodeService()
     
-    init_routes(blockchain)
+    init_routes(node_service)
     
     app.register_blueprint(api, url_prefix='/api')
     
@@ -32,8 +33,8 @@ if __name__ == '__main__':
     print("=" * 50)
     print("Group2Coin Blockchain Server")
     print("=" * 50)
-    print("Server starting on http://localhost:5000")
-    print("API endpoints available at http://localhost:5000/api")
+    print("Server starting on http://localhost:5001")
+    print("API endpoints available at http://localhost:5001/api")
     print("=" * 50)
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

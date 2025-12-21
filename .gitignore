@@ -1,36 +1,6 @@
-# Backend
-backend/venv/
-backend/__pycache__/
-backend/**/__pycache__/
-backend/**/*.pyc
-*.egg-info/
-dist/
-build/
-
-# Frontend
-frontend/node_modules/
-frontend/build/
-frontend/.env.local
-frontend/.env.*.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# OS
-Thumbs.db
+__pycache__/
+*.pyc
+*.db
+venv/
+node_modules/
 .env
-
-# Temporary
-/tmp/
-*.tmp
