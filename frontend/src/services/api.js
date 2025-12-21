@@ -139,4 +139,36 @@ export const supplyChainAPI = {
   }
 };
 
+export const smartContractAPI = {
+  // Get all contracts
+  getAllContracts: () => {
+    return api.get('/contracts');
+  },
+
+  // Create a new contract
+  createContract: (contractData) => {
+    return api.post('/contracts/create', contractData);
+  },
+
+  // Get contract details
+  getContract: (contractId) => {
+    return api.get(`/contracts/${contractId}`);
+  },
+
+  // Approve a contract
+  approveContract: (contractId, approverAddress) => {
+    return api.post(`/contracts/${contractId}/approve`, { approver: approverAddress });
+  },
+
+  // Execute a contract
+  executeContract: (contractId) => {
+    return api.post(`/contracts/${contractId}/execute`);
+  },
+
+  // Check and execute ready contracts
+  checkAndExecuteAll: () => {
+    return api.post('/contracts/check-execute');
+  }
+};
+
 export default api;

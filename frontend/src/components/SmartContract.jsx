@@ -10,10 +10,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { smartContractAPI } from '../services/api';
 import './SmartContract.css';
-
-const API_BASE_URL = 'http://localhost:5000/api';
 
 function SmartContract({ wallet }) {
   const [contracts, setContracts] = useState([]);
@@ -22,7 +20,7 @@ function SmartContract({ wallet }) {
   const [contractType, setContractType] = useState('ESCROW');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  
+
   // Form state
   const [contractForm, setContractForm] = useState({
     contract_id: '',
@@ -47,7 +45,7 @@ function SmartContract({ wallet }) {
 
   const loadContracts = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/contracts`);
+      const response = await smartContractAPI.getAllContracts();
       setContracts(response.data.contracts);
       setError('');
     } catch (err) {
@@ -57,7 +55,7 @@ function SmartContract({ wallet }) {
 
   const handleCreateContract = async (e) => {
     e.preventDefault();
-    
+
     if (!wallet) {
       setError('Please create a wallet first');
       return;
@@ -65,14 +63,14 @@ function SmartContract({ wallet }) {
 
     try {
       const participants = contractForm.participants.split(',').map(p => p.trim()).filter(p => p);
-      
+
       if (participants.length === 0) {
         setError('Please enter at least one participant address');
         return;
       }
 
       let conditions = {};
-      
+
       // Build conditions based on contract type
       switch (contractType) {
         case 'ESCROW':
@@ -120,14 +118,14 @@ function SmartContract({ wallet }) {
         }
       };
 
-      const response = await axios.post(`${API_BASE_URL}/contracts/create`, contractData);
-      
+      const response = await smartContractAPI.createContract(contractData);
+
       setMessage(`Contract created successfully: ${response.data.contract.contract_id}`);
       setError('');
       setShowCreateForm(false);
       resetForm();
       loadContracts();
-      
+
       setTimeout(() => setMessage(''), 5000);
     } catch (err) {
       setError('Failed to create contract: ' + (err.response?.data?.error || err.message));
@@ -141,18 +139,16 @@ function SmartContract({ wallet }) {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/contracts/${contractId}/approve`, {
-        approver: wallet.address
-      });
-      
+      const response = await smartContractAPI.approveContract(contractId, wallet.address);
+
       setMessage(`Approval added successfully`);
       setError('');
       loadContracts();
-      
+
       if (selectedContract?.contract_id === contractId) {
         setSelectedContract(response.data.contract);
       }
-      
+
       setTimeout(() => setMessage(''), 5000);
     } catch (err) {
       setError('Failed to approve: ' + (err.response?.data?.error || err.message));
@@ -161,16 +157,16 @@ function SmartContract({ wallet }) {
 
   const handleExecuteContract = async (contractId) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/contracts/${contractId}/execute`);
-      
+      const response = await smartContractAPI.executeContract(contractId);
+
       if (response.data.execution_result.success) {
         setMessage(`Contract executed successfully! Transaction: ${response.data.execution_result.transaction_id}`);
       } else {
         setError(`Execution failed: ${response.data.execution_result.message}`);
       }
-      
+
       loadContracts();
-      
+
       setTimeout(() => {
         setMessage('');
         setError('');
@@ -182,10 +178,10 @@ function SmartContract({ wallet }) {
 
   const handleCheckExecuteAll = async () => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/contracts/check-execute`);
+      const response = await smartContractAPI.checkAndExecuteAll();
       setMessage(response.data.message);
       loadContracts();
-      
+
       setTimeout(() => setMessage(''), 5000);
     } catch (err) {
       setError('Failed to check and execute: ' + (err.response?.data?.error || err.message));
@@ -194,7 +190,7 @@ function SmartContract({ wallet }) {
 
   const viewContractDetails = async (contractId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/contracts/${contractId}`);
+      const response = await smartContractAPI.getContract(contractId);
       setSelectedContract(response.data.contract);
       setError('');
     } catch (err) {
@@ -252,19 +248,19 @@ function SmartContract({ wallet }) {
       )}
 
       <div className="contract-actions">
-        <button 
+        <button
           className="btn btn-primary"
           onClick={() => setShowCreateForm(!showCreateForm)}
         >
           {showCreateForm ? 'Cancel' : 'Create New Contract'}
         </button>
-        <button 
+        <button
           className="btn btn-secondary"
           onClick={handleCheckExecuteAll}
         >
           Check & Execute Ready Contracts
         </button>
-        <button 
+        <button
           className="btn btn-secondary"
           onClick={loadContracts}
         >
@@ -275,11 +271,11 @@ function SmartContract({ wallet }) {
       {showCreateForm && (
         <div className="create-contract-form">
           <h2>Create Smart Contract</h2>
-          
+
           <div className="form-group">
             <label>Contract Type</label>
-            <select 
-              value={contractType} 
+            <select
+              value={contractType}
               onChange={(e) => setContractType(e.target.value)}
               className="form-control"
             >
@@ -298,7 +294,7 @@ function SmartContract({ wallet }) {
                   type="text"
                   className="form-control"
                   value={contractForm.contract_id}
-                  onChange={(e) => setContractForm({...contractForm, contract_id: e.target.value})}
+                  onChange={(e) => setContractForm({ ...contractForm, contract_id: e.target.value })}
                   placeholder="Auto-generated if empty"
                 />
               </div>
@@ -310,7 +306,7 @@ function SmartContract({ wallet }) {
                   step="0.01"
                   className="form-control"
                   value={contractForm.amount}
-                  onChange={(e) => setContractForm({...contractForm, amount: e.target.value})}
+                  onChange={(e) => setContractForm({ ...contractForm, amount: e.target.value })}
                   required
                   placeholder="Contract amount"
                 />
@@ -322,7 +318,7 @@ function SmartContract({ wallet }) {
               <textarea
                 className="form-control"
                 value={contractForm.participants}
-                onChange={(e) => setContractForm({...contractForm, participants: e.target.value})}
+                onChange={(e) => setContractForm({ ...contractForm, participants: e.target.value })}
                 required
                 placeholder="Enter participant addresses separated by commas"
                 rows="2"
@@ -337,7 +333,7 @@ function SmartContract({ wallet }) {
                   type="number"
                   className="form-control"
                   value={contractForm.required_approvals}
-                  onChange={(e) => setContractForm({...contractForm, required_approvals: e.target.value})}
+                  onChange={(e) => setContractForm({ ...contractForm, required_approvals: e.target.value })}
                   placeholder="Number of approvals needed (default: all participants)"
                 />
                 <small>Leave empty to require all participants to approve</small>
@@ -351,7 +347,7 @@ function SmartContract({ wallet }) {
                   type="datetime-local"
                   className="form-control"
                   value={contractForm.release_time}
-                  onChange={(e) => setContractForm({...contractForm, release_time: e.target.value})}
+                  onChange={(e) => setContractForm({ ...contractForm, release_time: e.target.value })}
                   required
                 />
                 <small>Funds will be released at this time</small>
@@ -365,7 +361,7 @@ function SmartContract({ wallet }) {
                   <select
                     className="form-control"
                     value={contractForm.condition_type}
-                    onChange={(e) => setContractForm({...contractForm, condition_type: e.target.value})}
+                    onChange={(e) => setContractForm({ ...contractForm, condition_type: e.target.value })}
                   >
                     <option value="balance_threshold">Balance Threshold</option>
                     <option value="block_height">Block Height</option>
@@ -380,7 +376,7 @@ function SmartContract({ wallet }) {
                       step="0.01"
                       className="form-control"
                       value={contractForm.threshold_value}
-                      onChange={(e) => setContractForm({...contractForm, threshold_value: e.target.value})}
+                      onChange={(e) => setContractForm({ ...contractForm, threshold_value: e.target.value })}
                       required
                       placeholder={contractForm.condition_type === 'balance_threshold' ? 'Minimum balance' : 'Block number'}
                     />
@@ -393,7 +389,7 @@ function SmartContract({ wallet }) {
                         type="text"
                         className="form-control"
                         value={contractForm.target_address}
-                        onChange={(e) => setContractForm({...contractForm, target_address: e.target.value})}
+                        onChange={(e) => setContractForm({ ...contractForm, target_address: e.target.value })}
                         placeholder="Your address if empty"
                       />
                     </div>
@@ -410,7 +406,7 @@ function SmartContract({ wallet }) {
                     type="number"
                     className="form-control"
                     value={contractForm.interval_seconds}
-                    onChange={(e) => setContractForm({...contractForm, interval_seconds: e.target.value})}
+                    onChange={(e) => setContractForm({ ...contractForm, interval_seconds: e.target.value })}
                     required
                     placeholder="Time between payments"
                   />
@@ -423,7 +419,7 @@ function SmartContract({ wallet }) {
                     type="number"
                     className="form-control"
                     value={contractForm.max_payments}
-                    onChange={(e) => setContractForm({...contractForm, max_payments: e.target.value})}
+                    onChange={(e) => setContractForm({ ...contractForm, max_payments: e.target.value })}
                     required
                     placeholder="Total number of payments"
                   />
@@ -433,8 +429,8 @@ function SmartContract({ wallet }) {
 
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">Create Contract</button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowCreateForm(false);
@@ -450,7 +446,7 @@ function SmartContract({ wallet }) {
 
       <div className="contracts-section">
         <h2>All Contracts ({contracts.length})</h2>
-        
+
         <div className="contracts-grid">
           {contracts.map((contract) => (
             <div key={contract.contract_id} className="contract-card">
@@ -460,7 +456,7 @@ function SmartContract({ wallet }) {
                   {contract.status}
                 </span>
               </div>
-              
+
               <div className="contract-details">
                 <div className="detail-row">
                   <span className="detail-label">Type:</span>
@@ -478,7 +474,7 @@ function SmartContract({ wallet }) {
                   <span className="detail-label">Participants:</span>
                   <span className="detail-value">{contract.participants.length}</span>
                 </div>
-                
+
                 {contract.contract_type === 'ESCROW' && (
                   <div className="detail-row">
                     <span className="detail-label">Approvals:</span>
@@ -487,14 +483,14 @@ function SmartContract({ wallet }) {
                     </span>
                   </div>
                 )}
-                
+
                 {contract.contract_type === 'TIME_LOCK' && contract.conditions.release_time && (
                   <div className="detail-row">
                     <span className="detail-label">Release:</span>
                     <span className="detail-value">{formatTimestamp(contract.conditions.release_time)}</span>
                   </div>
                 )}
-                
+
                 {contract.executed_at && (
                   <div className="detail-row">
                     <span className="detail-label">Executed:</span>
@@ -502,26 +498,26 @@ function SmartContract({ wallet }) {
                   </div>
                 )}
               </div>
-              
+
               <div className="contract-actions-grid">
-                <button 
+                <button
                   className="btn btn-small btn-info"
                   onClick={() => viewContractDetails(contract.contract_id)}
                 >
                   View Details
                 </button>
-                
+
                 {contract.status === 'ACTIVE' && contract.contract_type === 'ESCROW' && (
-                  <button 
+                  <button
                     className="btn btn-small btn-success"
                     onClick={() => handleApproveContract(contract.contract_id)}
                   >
                     Approve
                   </button>
                 )}
-                
+
                 {(contract.status === 'ACTIVE' || contract.status === 'PENDING') && (
-                  <button 
+                  <button
                     className="btn btn-small btn-primary"
                     onClick={() => handleExecuteContract(contract.contract_id)}
                   >
@@ -532,7 +528,7 @@ function SmartContract({ wallet }) {
             </div>
           ))}
         </div>
-        
+
         {contracts.length === 0 && (
           <div className="empty-state">
             <p>No contracts created yet</p>
@@ -548,7 +544,7 @@ function SmartContract({ wallet }) {
               <h2>Contract Details</h2>
               <button className="close-btn" onClick={() => setSelectedContract(null)}>×</button>
             </div>
-            
+
             <div className="modal-content">
               <div className="detail-section">
                 <h3>Basic Information</h3>
@@ -575,7 +571,7 @@ function SmartContract({ wallet }) {
                   <span className="detail-value address">{selectedContract.creator}</span>
                 </div>
               </div>
-              
+
               <div className="detail-section">
                 <h3>Participants</h3>
                 {selectedContract.participants.map((participant, index) => (
@@ -584,14 +580,14 @@ function SmartContract({ wallet }) {
                   </div>
                 ))}
               </div>
-              
+
               <div className="detail-section">
                 <h3>Conditions</h3>
                 <pre className="conditions-json">
                   {JSON.stringify(selectedContract.conditions, null, 2)}
                 </pre>
               </div>
-              
+
               {selectedContract.approvals && selectedContract.approvals.length > 0 && (
                 <div className="detail-section">
                   <h3>Approvals ({selectedContract.approvals.length})</h3>
@@ -602,7 +598,7 @@ function SmartContract({ wallet }) {
                   ))}
                 </div>
               )}
-              
+
               {selectedContract.transaction_id && (
                 <div className="detail-section">
                   <h3>Execution</h3>
