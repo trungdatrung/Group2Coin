@@ -581,40 +581,108 @@ function SmartContract({ wallet }) {
                 ))}
               </div>
 
-              <div className="detail-section">
-                <h3>Conditions</h3>
-                <pre className="conditions-json">
-                  {JSON.stringify(selectedContract.conditions, null, 2)}
-                </pre>
-              </div>
+            </div>
 
-              {selectedContract.approvals && selectedContract.approvals.length > 0 && (
-                <div className="detail-section">
-                  <h3>Approvals ({selectedContract.approvals.length})</h3>
-                  {selectedContract.approvals.map((approval, index) => (
-                    <div key={index} className="approval-item">
-                      <span className="address">{approval}</span>
-                    </div>
-                  ))}
+            <div className="detail-section">
+              <h3>Conditions</h3>
+
+              {/* TIME_LOCK */}
+              {selectedContract.conditions.release_time && (
+                <div className="detail-row">
+                  <span className="detail-label">Release Time:</span>
+                  <span className="detail-value">{formatTimestamp(selectedContract.conditions.release_time)}</span>
                 </div>
               )}
 
-              {selectedContract.transaction_id && (
-                <div className="detail-section">
-                  <h3>Execution</h3>
+              {/* ESCROW */}
+              {selectedContract.conditions.required_approvals && (
+                <div className="detail-row">
+                  <span className="detail-label">Required Approvals:</span>
+                  <span className="detail-value">{selectedContract.conditions.required_approvals}</span>
+                </div>
+              )}
+
+              {/* RECURRING */}
+              {selectedContract.conditions.interval && (
+                <>
                   <div className="detail-row">
-                    <span className="detail-label">Transaction ID:</span>
-                    <span className="detail-value">{selectedContract.transaction_id}</span>
+                    <span className="detail-label">Interval:</span>
+                    <span className="detail-value">{selectedContract.conditions.interval} seconds</span>
                   </div>
-                  {selectedContract.executed_at && (
+                  <div className="detail-row">
+                    <span className="detail-label">Progress:</span>
+                    <span className="detail-value">
+                      {selectedContract.conditions.payments_made || 0} / {selectedContract.conditions.max_payments} payments
+                    </span>
+                  </div>
+                  {selectedContract.conditions.last_payment_time && (
                     <div className="detail-row">
-                      <span className="detail-label">Executed At:</span>
-                      <span className="detail-value">{formatTimestamp(selectedContract.executed_at)}</span>
+                      <span className="detail-label">Last Payment:</span>
+                      <span className="detail-value">{formatTimestamp(selectedContract.conditions.last_payment_time)}</span>
                     </div>
                   )}
-                </div>
+                </>
               )}
+
+              {/* CONDITIONAL */}
+              {selectedContract.conditions.condition_type && (
+                <>
+                  <div className="detail-row">
+                    <span className="detail-label">Type:</span>
+                    <span className="detail-value">
+                      {selectedContract.conditions.condition_type === 'balance_threshold' ? 'Balance Threshold' : 'Block Height'}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Threshold:</span>
+                    <span className="detail-value">{selectedContract.conditions.threshold}</span>
+                  </div>
+                  {selectedContract.conditions.target_address && (
+                    <div className="detail-row">
+                      <span className="detail-label">Target Address:</span>
+                      <span className="detail-value address">{selectedContract.conditions.target_address}</span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Fallback for unknown types or raw view */}
+              {!selectedContract.conditions.release_time &&
+                !selectedContract.conditions.required_approvals &&
+                !selectedContract.conditions.interval &&
+                !selectedContract.conditions.condition_type && (
+                  <pre className="conditions-json">
+                    {JSON.stringify(selectedContract.conditions, null, 2)}
+                  </pre>
+                )}
             </div>
+
+            {selectedContract.approvals && selectedContract.approvals.length > 0 && (
+              <div className="detail-section">
+                <h3>Approvals ({selectedContract.approvals.length})</h3>
+                {selectedContract.approvals.map((approval, index) => (
+                  <div key={index} className="approval-item">
+                    <span className="address">{approval}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {selectedContract.transaction_id && (
+              <div className="detail-section">
+                <h3>Execution</h3>
+                <div className="detail-row">
+                  <span className="detail-label">Transaction ID:</span>
+                  <span className="detail-value">{selectedContract.transaction_id}</span>
+                </div>
+                {selectedContract.executed_at && (
+                  <div className="detail-row">
+                    <span className="detail-label">Executed At:</span>
+                    <span className="detail-value">{formatTimestamp(selectedContract.executed_at)}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

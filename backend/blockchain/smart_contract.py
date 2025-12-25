@@ -19,10 +19,10 @@ class ContractStatus(Enum):
 
 class ContractType(Enum):
     """Types of smart contracts"""
-    ESCROW = "escrow"  # Hold funds until condition met
-    TIME_LOCK = "time_lock"  # Release funds after time
-    CONDITIONAL = "conditional"  # Execute on custom condition
-    RECURRING = "recurring"  # Recurring payments
+    ESCROW = "ESCROW"
+    TIME_LOCK = "TIME_LOCK"
+    CONDITIONAL = "CONDITIONAL"
+    RECURRING = "RECURRING"
 
 
 class SmartContract:
@@ -82,15 +82,19 @@ class SmartContract:
         
         if contract_type == ContractType.TIME_LOCK.value:
             # Check if unlock time has passed
-            unlock_time = self.conditions.get('unlock_time', 0)
-            return time.time() >= unlock_time
+            release_time = self.conditions.get('release_time', 0)
+            return time.time() >= release_time
         
         elif contract_type == ContractType.ESCROW.value:
             # Check if approval condition is met
             required_approvals = self.conditions.get('required_approvals', [])
             received_approvals = self.conditions.get('received_approvals', [])
             
-            # Check if all required parties have approved
+            # If required_approvals is an int, check count
+            if isinstance(required_approvals, int):
+                return len(received_approvals) >= required_approvals
+            
+            # Otherwise assume it's a list of specific addresses
             return all(addr in received_approvals for addr in required_approvals)
         
         elif contract_type == ContractType.CONDITIONAL.value:
@@ -145,7 +149,7 @@ class SmartContract:
                 # For recurring, create single payment
                 recipient = self.conditions.get('recipient')
                 tx = Transaction(
-                    sender=f"CONTRACT:{self.contract_id}",
+                    sender_address=f"CONTRACT:{self.contract_id}",
                     recipient=recipient,
                     amount=self.amount,
                     signature="SMART_CONTRACT_EXECUTION"
@@ -164,7 +168,7 @@ class SmartContract:
                 # For other types, single execution
                 recipient = self.conditions.get('recipient') or self.participants[-1]
                 tx = Transaction(
-                    sender=f"CONTRACT:{self.contract_id}",
+                    sender_address=f"CONTRACT:{self.contract_id}",
                     recipient=recipient,
                     amount=self.amount,
                     signature="SMART_CONTRACT_EXECUTION"
